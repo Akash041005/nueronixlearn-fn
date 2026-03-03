@@ -2,19 +2,20 @@ import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useState } from 'react';
 import {
   AppBar, Toolbar, Typography, Button, Box, IconButton, Menu, MenuItem,
-  Avatar, Divider, alpha
+  Avatar, Divider, alpha, useTheme
 } from '@mui/material';
 import {
   Menu as MenuIcon, LightMode, DarkMode, KeyboardArrowDown, Logout, Person, Dashboard
 } from '@mui/icons-material';
 import { useAuth } from '../context/AuthContext';
-import { useTheme } from '../context/ThemeContext';
+import { useTheme as useCustomTheme } from '../context/ThemeContext';
 
-const ACCENT = '#7C6EE8';
+const ACCENT = '#00FF88';
 
 const Navbar = () => {
   const { user, logout } = useAuth();
-  const { mode, toggleTheme } = useTheme();
+  const { mode, toggleTheme } = useCustomTheme();
+  const theme = useTheme();
   const navigate = useNavigate();
   const location = useLocation();
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
@@ -52,14 +53,22 @@ const Navbar = () => {
   const isDark = mode === 'dark';
 
   return (
-    <AppBar position="sticky" elevation={0}>
+    <AppBar 
+      position="sticky" 
+      elevation={0}
+      sx={{ 
+        bgcolor: alpha(theme.palette.background.default, isDark ? 0.85 : 0.95),
+        backdropFilter: 'blur(12px)',
+        borderBottom: `1px solid ${alpha(theme.palette.divider, 0.5)}`
+      }}
+    >
       <Toolbar
         sx={{
-          maxWidth: 1280,
+          maxWidth: 1400,
           width: '100%',
           mx: 'auto',
           px: { xs: 2, md: 4 },
-          minHeight: '60px !important',
+          minHeight: '64px !important',
           gap: 2
         }}
       >
@@ -77,22 +86,23 @@ const Navbar = () => {
           }}
         >
           <Box sx={{
-            width: 28, height: 28,
-            borderRadius: '6px',
-            background: ACCENT,
+            width: 34, height: 34,
+            borderRadius: '8px',
+            background: `linear-gradient(135deg, ${ACCENT} 0%, #4DFFA3 100%)`,
             display: 'flex', alignItems: 'center', justifyContent: 'center',
-            flexShrink: 0
+            flexShrink: 0,
+            boxShadow: `0 2px 12px ${alpha(ACCENT, 0.35)}`
           }}>
             <Typography sx={{
               fontFamily: '"Space Grotesk", sans-serif',
-              fontWeight: 700, fontSize: '0.75rem', color: '#fff', lineHeight: 1
+              fontWeight: 700, fontSize: '0.78rem', color: '#fff', lineHeight: 1
             }}>NL</Typography>
           </Box>
           <Typography sx={{
             fontFamily: '"Space Grotesk", sans-serif',
-            fontWeight: 600,
-            fontSize: '0.95rem',
-            letterSpacing: '-0.01em',
+            fontWeight: 700,
+            fontSize: '1.05rem',
+            letterSpacing: '-0.02em',
             color: 'text.primary',
             display: { xs: 'none', sm: 'block' }
           }}>

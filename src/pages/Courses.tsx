@@ -9,7 +9,7 @@ import { Search, ArrowForward } from '@mui/icons-material';
 import { coursesAPI } from '../services/api';
 import SEO from '../components/SEO';
 
-const ACCENT = '#7C6EE8';
+const ACCENT = '#00FF88';
 const DIFFICULTIES = ['All', 'beginner', 'intermediate', 'advanced'];
 const CATEGORIES = ['All', 'Programming', 'Data Science', 'Web Development', 'Machine Learning', 'Mathematics', 'Science'];
 

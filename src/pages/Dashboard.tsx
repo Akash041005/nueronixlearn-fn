@@ -8,7 +8,7 @@ import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContai
 import { ArrowForward, TrendingUp, Schedule, LocalFireDepartment, School } from '@mui/icons-material';
 import { analyticsAPI, mlAPI } from '../services/api';
 
-const ACCENT = '#7C6EE8';
+const ACCENT = '#00FF88';
 
 const StatCard = ({ label, value, icon, sub }: any) => {
   const theme = useTheme();

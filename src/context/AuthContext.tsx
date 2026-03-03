@@ -42,8 +42,13 @@ interface AuthContextType {
     name: string,
     email: string,
     password: string,
-    role?: string
+    role?: string,
+    phone?: string
   ) => Promise<void>;
+  sendOTP: (email: string) => Promise<void>;
+  verifyOTPRegister: (data: { email: string; otp: string; name: string; password: string; role: string; phone?: string }) => Promise<void>;
+  sendLoginOTP: (email: string) => Promise<void>;
+  verifyOTPLogin: (email: string, otp: string) => Promise<void>;
   logout: () => void;
   refreshUser: () => Promise<void>;
 }
@@ -121,20 +126,22 @@ export const AuthProvider = ({
   };
 
   /* -------------------------
-     REGISTER
-  ------------------------- */
+      REGISTER
+   ------------------------- */
 
   const register = async (
     name: string,
     email: string,
     password: string,
-    role: string = "student"
+    role: string = "student",
+    phone?: string
   ) => {
     const res = await api.post("/auth/register", {
       name,
       email,
       password,
       role,
+      phone,
     });
 
     localStorage.setItem("token", res.data.token);
@@ -144,8 +151,42 @@ export const AuthProvider = ({
   };
 
   /* -------------------------
-     LOGOUT
-  ------------------------- */
+      OTP FUNCTIONS
+   ------------------------- */
+
+  const sendOTP = async (email: string) => {
+    await api.post("/auth/send-otp", { email });
+  };
+
+  const verifyOTPRegister = async (data: { email: string; otp: string; name: string; password: string; role: string; phone?: string }) => {
+    const res = await api.post("/auth/verify-otp-register", data);
+    localStorage.setItem("token", res.data.token);
+    setUser(res.data.user);
+    navigate("/onboarding");
+  };
+
+  const sendLoginOTP = async (email: string) => {
+    await api.post("/auth/send-login-otp", { email });
+  };
+
+  const verifyOTPLogin = async (email: string, otp: string) => {
+    const res = await api.post("/auth/verify-otp-login", { email, otp });
+    localStorage.setItem("token", res.data.token);
+    setUser(res.data.user);
+    const token = localStorage.getItem("token");
+    if (token) {
+      const userRes = await api.get("/auth/me");
+      if (!userRes.data.user.onboardingCompleted) {
+        navigate("/onboarding");
+      } else {
+        navigate(userRes.data.user.role === 'teacher' ? '/teacher' : '/dashboard');
+      }
+    }
+  };
+
+  /* -------------------------
+      LOGOUT
+   ------------------------- */
 
   const logout = () => {
     localStorage.removeItem("token");
@@ -164,6 +205,10 @@ export const AuthProvider = ({
         loading,
         login,
         register,
+        sendOTP,
+        verifyOTPRegister,
+        sendLoginOTP,
+        verifyOTPLogin,
         logout,
         refreshUser,
       }}

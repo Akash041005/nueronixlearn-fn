@@ -5,7 +5,7 @@ import { ThemeProvider, CssBaseline } from '@mui/material';
 import { useMemo } from 'react';
 import App from './App';
 import { AuthProvider } from './context/AuthContext';
-import { ThemeProvider as CustomThemeProvider, useTheme } from './context/ThemeContext';
+import { CustomThemeProvider, useTheme } from './context/ThemeContext';
 import { createAppTheme } from './theme';
 
 const ThemedApp = () => {

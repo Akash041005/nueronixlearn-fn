@@ -72,7 +72,7 @@ const Onboarding = () => {
     <Box sx={{ minHeight: '100vh', bgcolor: '#f5f7fa', py: 4 }}>
       <Container maxWidth="md">
         <Typography variant="h4" fontWeight={700} textAlign="center" gutterBottom>
-          Welcome to NeuroLearn
+          Welcome to NeuronixLearn
         </Typography>
         <Typography variant="body1" textAlign="center" color="text.secondary" sx={{ mb: 4 }}>
           Let's personalize your learning experience

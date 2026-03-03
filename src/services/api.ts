@@ -12,7 +12,7 @@ const api = axios.create({
 });
 
 api.interceptors.request.use((config) => {
-  const token = localStorage.getItem('token');
+  const token = localStorage.getItem('token') || localStorage.getItem('adminToken');
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
@@ -36,11 +36,17 @@ api.interceptors.response.use(
 
 export const authAPI = {
   login: (email: string, password: string) => api.post('/auth/login', { email, password }),
-  register: (data: { name: string; email: string; password: string; role?: string }) => 
+  register: (data: { name: string; email: string; password: string; role?: string; phone?: string }) => 
     api.post('/auth/register', data),
   getMe: () => api.get('/auth/me'),
   updateProfile: (data: any) => api.put('/auth/profile', data),
-  completeOnboarding: (data: any) => api.put('/auth/complete-onboarding', data)
+  completeOnboarding: (data: any) => api.put('/auth/complete-onboarding', data),
+  sendOTP: (email: string) => api.post('/auth/send-otp', { email }),
+  verifyOTPRegister: (data: { email: string; otp: string; name: string; password: string; role: string; phone?: string }) =>
+    api.post('/auth/verify-otp-register', data),
+  sendLoginOTP: (email: string) => api.post('/auth/send-login-otp', { email }),
+  verifyOTPLogin: (email: string, otp: string) => api.post('/auth/verify-otp-login', { email, otp }),
+  updatePhone: (phone: string) => api.put('/auth/phone', { phone })
 };
 
 export const coursesAPI = {
@@ -134,6 +140,36 @@ export const chatbotAPI = {
   getTodos: () => api.get('/chatbot/todos'),
   completeTodo: (id: string) => api.put(`/chatbot/todos/${id}/complete`, {}),
   getNextVideo: () => api.get('/chatbot/next-video')
+};
+
+export const adminAPI = {
+  login: (username: string, password: string) => api.post('/admin/login', { username, password }),
+  listAdmins: () => api.get('/admin/list'),
+  addAdmin: (data: { username: string; password: string; email: string; isSuperAdmin?: boolean }) => 
+    api.post('/admin/add', data),
+  removeAdmin: (id: string) => api.delete(`/admin/${id}`),
+  
+  // Dashboard
+  getStats: () => api.get('/admin/stats'),
+  
+  // Users
+  getUsers: (params?: any) => api.get('/admin/users', { params }),
+  getUser: (id: string) => api.get(`/admin/users/${id}`),
+  updateUserRole: (id: string, role: string) => api.put(`/admin/users/${id}/role`, { role }),
+  deleteUser: (id: string) => api.delete(`/admin/users/${id}`),
+  
+  // Courses
+  getCourses: (params?: any) => api.get('/admin/courses', { params }),
+  getCourse: (id: string) => api.get(`/admin/courses/${id}`),
+  updateCourseFeatured: (id: string, featured: boolean) => api.put(`/admin/courses/${id}/featured`, { featured }),
+  deleteCourse: (id: string) => api.delete(`/admin/courses/${id}`),
+  
+  // Exams
+  getExams: (params?: any) => api.get('/admin/exams', { params }),
+  deleteExam: (id: string) => api.delete(`/admin/exams/${id}`),
+  
+  // Analytics
+  getAnalytics: (days?: number) => api.get('/admin/analytics', { params: { days } })
 };
 
 export default api;

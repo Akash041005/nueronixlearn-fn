@@ -2,19 +2,20 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import {
   Box, Typography, TextField, Button, Alert, CircularProgress,
-  alpha, useTheme
+  alpha, useTheme, IconButton, InputAdornment
 } from '@mui/material';
-import { ArrowForward } from '@mui/icons-material';
+import { Visibility, VisibilityOff, Lock, Email } from '@mui/icons-material';
 import { useAuth } from '../context/AuthContext';
 import SEO from '../components/SEO';
 
-const ACCENT = '#7C6EE8';
+const ACCENT = '#00FF88';
 
 const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const { login } = useAuth();
   const navigate = useNavigate();
   const theme = useTheme();
@@ -35,11 +36,9 @@ const Login = () => {
         } else {
           navigate(data.user.role === 'teacher' ? '/teacher' : '/dashboard');
         }
-      } else {
-        navigate('/dashboard');
       }
     } catch (err: any) {
-      setError(err.response?.data?.error || 'Invalid email or password');
+      setError(err.response?.data?.error || 'Invalid credentials');
     } finally {
       setLoading(false);
     }
@@ -49,91 +48,106 @@ const Login = () => {
     <Box sx={{ minHeight: '100vh', display: 'flex', bgcolor: 'background.default' }}>
       <SEO 
         title="Login"
-        description="Sign in to your NueronixLearn account and continue your AI-powered learning journey."
+        description="Sign in to your NeuronixLearn account and continue your AI-powered learning journey."
         url="/login"
         noindex={false}
       />
-      {/* Left panel — branding */}
       <Box sx={{
-        display: { xs: 'none', md: 'flex' },
+        display: { xs: 'none', lg: 'flex' },
         flex: 1, flexDirection: 'column', justifyContent: 'space-between',
-        p: 6,
+        p: 8,
         borderRight: `1px solid ${theme.palette.divider}`,
         position: 'relative', overflow: 'hidden',
+        background: isDark 
+          ? `linear-gradient(135deg, ${alpha('#0a0a0f', 0.95)} 0%, ${alpha('#1a1a2e', 0.9)} 100%)`
+          : `linear-gradient(135deg, ${alpha('#f8f9ff', 0.95)} 0%, ${alpha('#eef0f5', 0.9)} 100%)`,
         '&::before': {
           content: '""', position: 'absolute', inset: 0,
-          backgroundImage: `radial-gradient(ellipse 80% 70% at 0% 100%, ${alpha(ACCENT, isDark ? 0.18 : 0.1)} 0%, transparent 60%)`,
+          backgroundImage: `radial-gradient(ellipse 80% 70% at 0% 100%, ${alpha(ACCENT, isDark ? 0.25 : 0.15)} 0%, transparent 60%)`,
           pointerEvents: 'none'
         }
       }}>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-          <Box sx={{ width: 32, height: 32, borderRadius: '7px', bgcolor: ACCENT, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <Typography sx={{ fontFamily: '"Space Grotesk"', fontWeight: 700, fontSize: '0.8rem', color: '#fff' }}>NL</Typography>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, position: 'relative', zIndex: 1 }}>
+          <Box sx={{ 
+            width: 40, height: 40, borderRadius: '10px', 
+            background: `linear-gradient(135deg, ${ACCENT} 0%, #4DFFA3 100%)`,
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            boxShadow: `0 4px 20px ${alpha(ACCENT, 0.4)}`
+          }}>
+            <Typography sx={{ fontFamily: '"Space Grotesk"', fontWeight: 700, fontSize: '0.85rem', color: '#fff' }}>NL</Typography>
           </Box>
-          <Typography sx={{ fontFamily: '"Space Grotesk"', fontWeight: 600, fontSize: '1rem' }}>NueronixLearn</Typography>
+          <Typography sx={{ fontWeight: 700, fontSize: '1.2rem' }}>NeuronixLearn</Typography>
         </Box>
-        <Box>
-          <Typography variant="h2" sx={{ fontSize: '2.4rem', mb: 2, maxWidth: 380, letterSpacing: '-0.02em' }}>
-            Your AI learning partner.
+        <Box sx={{ position: 'relative', zIndex: 1 }}>
+          <Typography variant="h2" sx={{ fontSize: '3rem', mb: 3, maxWidth: 420,
+            background: `linear-gradient(135deg, ${isDark ? '#fff' : '#1a1a2e'} 0%, ${ACCENT} 100%)`,
+            WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent'
+          }}>
+            Welcome back!
           </Typography>
-          <Typography color="text.secondary" sx={{ lineHeight: 1.7, maxWidth: 340 }}>
-            Adaptive paths. Real insights. A platform that learns alongside you.
+          <Typography color="text.secondary" sx={{ lineHeight: 1.8, maxWidth: 380, fontSize: '1.1rem' }}>
+            Sign in to continue your learning journey.
           </Typography>
+          <Box sx={{ display: 'flex', gap: 2, mt: 4 }}>
+            {['🔒 Secure', '⚡ Fast', '📚 500+ Courses'].map((stat) => (
+              <Box key={stat} sx={{ px: 2, py: 1, borderRadius: '8px', bgcolor: alpha(ACCENT, isDark ? 0.15 : 0.1) }}>
+                <Typography sx={{ fontSize: '0.85rem', fontWeight: 600, color: ACCENT }}>{stat}</Typography>
+              </Box>
+            ))}
+          </Box>
         </Box>
-        <Typography variant="body2" color="text.secondary">© 2025 NueronixLearn</Typography>
+        <Typography variant="body2" color="text.secondary">© 2025 NeuronixLearn</Typography>
       </Box>
 
-      {/* Right panel — form */}
-      <Box sx={{
-        flex: { xs: 1, md: '0 0 440px' },
-        display: 'flex', flexDirection: 'column', justifyContent: 'center',
-        p: { xs: 3, md: 6 }
-      }}>
-        <Box sx={{ maxWidth: 360, width: '100%', mx: 'auto' }}>
-          {/* Mobile logo */}
-          <Box sx={{ display: { xs: 'flex', md: 'none' }, mb: 4, alignItems: 'center', gap: 1.5 }}>
-            <Box sx={{ width: 28, height: 28, borderRadius: '6px', bgcolor: ACCENT, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <Typography sx={{ fontFamily: '"Space Grotesk"', fontWeight: 700, fontSize: '0.72rem', color: '#fff' }}>NL</Typography>
+      <Box sx={{ flex: { xs: 1, lg: '0 0 520px' }, display: 'flex', flexDirection: 'column', justifyContent: 'center', p: { xs: 4, md: 8 } }}>
+        <Box sx={{ maxWidth: 400, width: '100%', mx: 'auto' }}>
+          <Box sx={{ display: { xs: 'flex', lg: 'none' }, mb: 5, alignItems: 'center', gap: 1.5 }}>
+            <Box sx={{ width: 36, height: 36, borderRadius: '9px', background: ACCENT }}>
+              <Typography sx={{ fontWeight: 700, fontSize: '0.78rem', color: '#fff', textAlign: 'center', mt: 0.5 }}>NL</Typography>
             </Box>
-            <Typography sx={{ fontFamily: '"Space Grotesk"', fontWeight: 600, fontSize: '0.95rem' }}>NueronixLearn</Typography>
+            <Typography fontWeight={700}>NeuronixLearn</Typography>
           </Box>
 
-          <Typography variant="h4" sx={{ mb: 0.75, fontWeight: 600, letterSpacing: '-0.015em' }}>
-            Welcome back
-          </Typography>
-          <Typography color="text.secondary" sx={{ mb: 4, fontSize: '0.9rem' }}>
-            Sign in to your account
-          </Typography>
+          <Typography variant="h3" sx={{ mb: 1, fontWeight: 700 }}>Welcome back</Typography>
+          <Typography color="text.secondary" sx={{ mb: 4 }}>Sign in to continue</Typography>
 
-          {error && <Alert severity="error" sx={{ mb: 3, borderRadius: '6px', fontSize: '0.85rem' }}>{error}</Alert>}
+          {error && <Alert severity="error" sx={{ mb: 3, borderRadius: '10px' }}>{error}</Alert>}
 
           <form onSubmit={handleSubmit}>
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2.5 }}>
               <TextField
-                fullWidth label="Email" type="email"
+                fullWidth label="Email address" type="email"
                 value={email} onChange={(e) => setEmail(e.target.value)} required
-                autoComplete="email"
+                sx={{ '& .MuiOutlinedInput-root': { borderRadius: '10px' } }}
+                InputProps={{
+                  startAdornment: <Email sx={{ mr: 1, color: 'text.secondary' }} />
+                }}
               />
               <TextField
-                fullWidth label="Password" type="password"
+                fullWidth label="Password" type={showPassword ? 'text' : 'password'}
                 value={password} onChange={(e) => setPassword(e.target.value)} required
-                autoComplete="current-password"
+                sx={{ '& .MuiOutlinedInput-root': { borderRadius: '10px' } }}
+                InputProps={{
+                  startAdornment: <Lock sx={{ mr: 1, color: 'text.secondary' }} />,
+                  endAdornment: (
+                    <InputAdornment position="end">
+                      <IconButton onClick={() => setShowPassword(!showPassword)} edge="end">
+                        {showPassword ? <VisibilityOff /> : <Visibility />}
+                      </IconButton>
+                    </InputAdornment>
+                  )
+                }}
               />
-              <Button
-                fullWidth variant="contained" type="submit" size="large"
-                disabled={loading} endIcon={!loading && <ArrowForward />}
-                sx={{ mt: 1, py: 1.25 }}
-              >
-                {loading ? <CircularProgress size={20} /> : 'Sign in'}
+              <Button fullWidth variant="contained" type="submit" size="large" disabled={loading}
+                sx={{ py: 1.5, borderRadius: '10px', fontWeight: 600, boxShadow: `0 4px 20px ${alpha(ACCENT, 0.3)}` }}>
+                {loading ? <CircularProgress size={20} /> : 'Sign In'}
               </Button>
             </Box>
           </form>
 
-          <Typography sx={{ mt: 4, fontSize: '0.85rem', color: 'text.secondary', textAlign: 'center' }}>
-            No account?{' '}
-            <Link to="/register" style={{ color: ACCENT, textDecoration: 'none', fontWeight: 500 }}>
-              Create one free
-            </Link>
+          <Typography sx={{ mt: 4, textAlign: 'center' }}>
+            Don't have an account?{' '}
+            <Link to="/register" style={{ color: ACCENT, fontWeight: 600 }}>Create one</Link>
           </Typography>
         </Box>
       </Box>

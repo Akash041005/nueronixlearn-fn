@@ -2,9 +2,9 @@ import { useState, useRef } from 'react';
 import {
   Box, Button, Typography, LinearProgress,
   MenuItem, TextField, Dialog, DialogTitle, DialogContent,
-  DialogActions, Chip, List, ListItem, ListItemText, Alert
+  DialogActions, Chip, List, ListItem, ListItemText, Alert, CircularProgress
 } from '@mui/material';
-import { CloudUpload, PictureAsPdf, Quiz } from '@mui/icons-material';
+import { CloudUpload, PictureAsPdf, Quiz, HourglassEmpty } from '@mui/icons-material';
 import { mlAPI } from '../services/api';
 
 interface PDFUploadDialogProps {
@@ -125,7 +125,20 @@ export default function PDFUploadDialog({ open, onClose, onSuccess }: PDFUploadD
 
             {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
 
-            {loading && <LinearProgress sx={{ mb: 2 }} />}
+            {loading && (
+              <Box sx={{ mb: 2 }}>
+                <LinearProgress />
+                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', mt: 2, gap: 1 }}>
+                  <HourglassEmpty sx={{ color: 'primary.main', animation: 'pulse 1.5s infinite' }} />
+                  <Typography color="primary.main" sx={{ fontWeight: 500 }}>
+                    Uploading PDF... Please wait till I get a response
+                  </Typography>
+                </Box>
+                <Typography variant="caption" color="text.secondary" sx={{ display: 'block', textAlign: 'center', mt: 1 }}>
+                  Analyzing content and extracting topics...
+                </Typography>
+              </Box>
+            )}
           </>
         ) : (
           <>
@@ -190,8 +203,9 @@ export default function PDFUploadDialog({ open, onClose, onSuccess }: PDFUploadD
               onClick={handleUpload} 
               variant="contained" 
               disabled={!file || !subject || loading}
+              startIcon={loading ? <CircularProgress size={18} color="inherit" /> : <CloudUpload />}
             >
-              {loading ? 'Processing...' : 'Upload & Process'}
+              {loading ? 'Processing PDF...' : 'Upload & Process'}
             </Button>
           </>
         )}

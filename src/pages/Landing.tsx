@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { Box, Container, Typography, Button, Grid, alpha, useTheme } from '@mui/material';
 import { ArrowForward } from '@mui/icons-material';
 
-const ACCENT = '#7C6EE8';
+const ACCENT = '#00FF88';
 
 const STATS = [
   { value: '50K+', label: 'Active learners' },
@@ -38,7 +38,7 @@ const Landing = () => {
     const schemaData = {
       "@context": "https://schema.org",
       "@type": "EducationWebApp",
-      "name": "NueronixLearn",
+      "name": "NeuronixLearn",
       "description": "AI-Powered Adaptive Learning Platform that personalizes education based on individual learning patterns",
       "url": "https://nueronixlearn.com",
       "applicationCategory": "EducationApplication",
@@ -56,7 +56,7 @@ const Landing = () => {
       },
       "author": {
         "@type": "Organization",
-        "name": "NueronixLearn"
+        "name": "NeuronixLearn"
       }
     };
 
@@ -136,7 +136,7 @@ const Landing = () => {
             lineHeight: 1.7,
             mb: 5
           }}>
-            NeuroLearn adapts to how your brain actually works — serving the right content at the right difficulty, at exactly the right moment.
+            NeuronixLearn adapts to how your brain actually works — serving the right content at the right difficulty, at exactly the right moment.
           </Typography>
 
           <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap', mb: { xs: 8, md: 12 } }}>
@@ -195,7 +195,7 @@ const Landing = () => {
         <Container maxWidth="lg">
           <Box sx={{ mb: 8, maxWidth: 520 }}>
             <Typography variant="overline" sx={{ color: ACCENT, mb: 1, display: 'block' }}>
-              Why NeuroLearn
+              Why NeuronixLearn
             </Typography>
             <Typography variant="h2" sx={{ fontSize: { xs: '2rem', md: '2.8rem' }, mb: 2 }}>
               Built around how you learn
@@ -261,7 +261,7 @@ const Landing = () => {
             Ready to learn differently?
           </Typography>
           <Typography color="text.secondary" sx={{ mb: 5, fontSize: '1.05rem' }}>
-            Join thousands of students and teachers already using NeuroLearn.
+            Join thousands of students and teachers already using NeuronixLearn.
           </Typography>
           <Box sx={{ display: 'flex', justifyContent: 'center', gap: 2 }}>
             <Button

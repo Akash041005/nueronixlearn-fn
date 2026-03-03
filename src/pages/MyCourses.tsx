@@ -7,7 +7,7 @@ import {
 import { School, PlayArrow, CheckCircle, ArrowForward } from '@mui/icons-material';
 import { coursesAPI } from '../services/api';
 
-const ACCENT = '#7C6EE8';
+const ACCENT = '#00FF88';
 
 const MyCourses = () => {
     const [enrollments, setEnrollments] = useState<any[]>([]);
@@ -83,7 +83,7 @@ const MyCourses = () => {
                                             height: 4, borderRadius: '8px 8px 0 0',
                                             background: completed
                                                 ? 'linear-gradient(90deg, #22C55E, #16A34A)'
-                                                : `linear-gradient(90deg, ${ACCENT}, #9B90EF)`,
+                                                : `linear-gradient(90deg, ${ACCENT}, #4DFFA3)`,
                                             width: `${Math.max(pct, 8)}%`
                                         }} />
 

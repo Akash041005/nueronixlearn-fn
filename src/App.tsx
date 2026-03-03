@@ -20,6 +20,8 @@ import CreateExam from './pages/CreateExam';
 import TeacherExamsList from './pages/TeacherExamsList';
 import MyCourses from './pages/MyCourses';
 import StudyPlan from './pages/StudyPlan';
+import AdminPanel from './pages/AdminPanel';
+import AdminLogin from './pages/AdminLogin';
 
 const ProtectedRoute = ({ children, requireTeacher = false }: { children: React.ReactNode; requireTeacher?: boolean }) => {
   const { user, loading } = useAuth();
@@ -92,7 +94,8 @@ function App() {
         } />
 
         {/* Admin */}
-        <Route path="/admin" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+        <Route path="/admin-login" element={<AdminLogin />} />
+        <Route path="/admin" element={<AdminPanel />} />
       </Routes>
       <NeuroBot />
     </>

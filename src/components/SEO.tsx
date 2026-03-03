@@ -13,7 +13,7 @@ export interface SEOProps {
   noindex?: boolean;
 }
 
-const DEFAULT_TITLE = 'NueronixLearn — AI-Powered Adaptive Learning Platform';
+const DEFAULT_TITLE = 'NeuronixLearn — AI-Powered Adaptive Learning Platform';
 const DEFAULT_DESCRIPTION = 'Learn smarter with AI that adapts to your unique learning style. Personalized content, adaptive difficulty, and deep analytics.';
 const DEFAULT_IMAGE = 'https://nueronixlearn.com/og-image.png';
 const BASE_URL = 'https://nueronixlearn.com';
@@ -30,7 +30,7 @@ export const SEO = ({
   tags = [],
   noindex = false
 }: SEOProps) => {
-  const fullTitle = title ? `${title} | NueronixLearn` : DEFAULT_TITLE;
+  const fullTitle = title ? `${title} | NeuronixLearn` : DEFAULT_TITLE;
   const canonicalUrl = url ? `${BASE_URL}${url}` : BASE_URL;
   const fullImageUrl = image.startsWith('http') ? image : `${BASE_URL}${image}`;
 
@@ -48,7 +48,7 @@ export const SEO = ({
       'og:image': fullImageUrl,
       'og:url': canonicalUrl,
       'og:type': type,
-      'og:site_name': 'NueronixLearn',
+      'og:site_name': 'NeuronixLearn',
       'og:locale': 'en_US',
       
       'twitter:card': 'summary_large_image',
