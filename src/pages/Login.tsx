@@ -72,9 +72,10 @@ const Login = () => {
             width: 40, height: 40, borderRadius: '10px', 
             background: `linear-gradient(135deg, ${ACCENT} 0%, #4DFFA3 100%)`,
             display: 'flex', alignItems: 'center', justifyContent: 'center',
-            boxShadow: `0 4px 20px ${alpha(ACCENT, 0.4)}`
+            boxShadow: `0 4px 20px ${alpha(ACCENT, 0.4)}`,
+            overflow: 'hidden'
           }}>
-            <Typography sx={{ fontFamily: '"Space Grotesk"', fontWeight: 700, fontSize: '0.85rem', color: '#fff' }}>NL</Typography>
+            <Box component="img" src="/logo.jpg" alt="Logo" sx={{ width: '100%', height: '100%', objectFit: 'cover' }} />
           </Box>
           <Typography sx={{ fontWeight: 700, fontSize: '1.2rem' }}>NeuronixLearn</Typography>
         </Box>
@@ -102,8 +103,8 @@ const Login = () => {
       <Box sx={{ flex: { xs: 1, lg: '0 0 520px' }, display: 'flex', flexDirection: 'column', justifyContent: 'center', p: { xs: 4, md: 8 } }}>
         <Box sx={{ maxWidth: 400, width: '100%', mx: 'auto' }}>
           <Box sx={{ display: { xs: 'flex', lg: 'none' }, mb: 5, alignItems: 'center', gap: 1.5 }}>
-            <Box sx={{ width: 36, height: 36, borderRadius: '9px', background: ACCENT }}>
-              <Typography sx={{ fontWeight: 700, fontSize: '0.78rem', color: '#fff', textAlign: 'center', mt: 0.5 }}>NL</Typography>
+            <Box sx={{ width: 36, height: 36, borderRadius: '9px', background: ACCENT, overflow: 'hidden' }}>
+              <Box component="img" src="/logo.jpg" alt="Logo" sx={{ width: '100%', height: '100%', objectFit: 'cover' }} />
             </Box>
             <Typography fontWeight={700}>NeuronixLearn</Typography>
           </Box>

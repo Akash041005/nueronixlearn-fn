@@ -177,8 +177,9 @@ const NeuroBot = () => {
 
     try {
       const res = await mlAPI.uploadPDF(file, 'general');
+      console.log('[NeuroBot] PDF upload response:', res.data);
       
-      const summary = res.data?.summary || '';
+      const summary = res.data?.summary || 'Analysis completed';
       const topics = res.data?.topics || [];
       const questions = res.data?.questions || [];
       const keyPoints = res.data?.keyPoints || [];
@@ -186,7 +187,7 @@ const NeuroBot = () => {
 
       let responseContent = `📄 **PDF Analysis Complete**\n\n`;
       
-      if (summary) {
+      if (summary && !summary.includes('not configured')) {
         responseContent += `${summary}\n\n`;
       }
       
@@ -217,6 +218,10 @@ const NeuroBot = () => {
         responseContent += `\n✨ ${addedToStudyPlan} topic(s) added to your study plan!`;
       }
 
+      if (topics.length === 0 && questions.length === 0 && keyPoints.length === 0) {
+        responseContent += `\n⚠️ Could not fully analyze this PDF. Try a different file or check if it's a scanned document.`;
+      }
+
       setMessages(prev => [...prev, {
         role: 'assistant',
         content: responseContent,
@@ -225,9 +230,17 @@ const NeuroBot = () => {
       }]);
 
     } catch (err: any) {
+      console.error('[NeuroBot] PDF upload error:', err);
+      let errorMsg = 'Please try again.';
+      if (err.response?.data?.error) {
+        errorMsg = err.response.data.error;
+      } else if (err.message) {
+        errorMsg = err.message;
+      }
+      
       setMessages(prev => [...prev, {
         role: 'assistant',
-        content: `Sorry, I couldn't process the PDF. ${err.response?.data?.message || 'Please try again.'}`,
+        content: `❌ Sorry, I couldn't process the PDF.\n\nError: ${errorMsg}\n\nPlease make sure:\n• The file is a valid PDF\n• The file is not password protected\n• The file is not too large (>10MB)`,
         timestamp: new Date(),
         source: 'cached'
       }]);

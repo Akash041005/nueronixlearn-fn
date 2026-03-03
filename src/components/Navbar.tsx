@@ -85,18 +85,15 @@ const Navbar = () => {
             flexShrink: 0
           }}
         >
-          <Box sx={{
-            width: 34, height: 34,
-            borderRadius: '8px',
+          <Box sx={{ 
+            width: 36, height: 36, borderRadius: '8px',
             background: `linear-gradient(135deg, ${ACCENT} 0%, #4DFFA3 100%)`,
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             flexShrink: 0,
+            overflow: 'hidden',
             boxShadow: `0 2px 12px ${alpha(ACCENT, 0.35)}`
           }}>
-            <Typography sx={{
-              fontFamily: '"Space Grotesk", sans-serif',
-              fontWeight: 700, fontSize: '0.78rem', color: '#fff', lineHeight: 1
-            }}>NL</Typography>
+            <Box component="img" src="/logo.jpg" alt="Logo" sx={{ width: '100%', height: '100%', objectFit: 'cover' }} />
           </Box>
           <Typography sx={{
             fontFamily: '"Space Grotesk", sans-serif',
