@@ -6,16 +6,17 @@ import {
 } from '@mui/material';
 import {
   Close, Send, SmartToy, Psychology, AutoAwesome,
-  YouTube, AddCircle
+  YouTube, AddCircle, PictureAsPdf, AttachFile
 } from '@mui/icons-material';
 import { useTheme } from '../context/ThemeContext';
-import { chatbotAPI } from '../services/api';
+import { chatbotAPI, mlAPI } from '../services/api';
 
 interface Message {
   role: 'user' | 'assistant';
   content: string;
   timestamp: Date;
-  source?: 'cached' | 'hardcoded' | 'ai';
+  source?: 'cached' | 'hardcoded' | 'ai' | 'pdf';
+  pdfName?: string;
 }
 
 interface Suggestion {
@@ -45,6 +46,9 @@ const NeuroBot = () => {
   const [suggestion, setSuggestion] = useState<Suggestion | null>(null);
   const [showAddTopic, setShowAddTopic] = useState(false);
   const [detectedTopic, setDetectedTopic] = useState<{ topic: string; subject: string } | null>(null);
+  const [pdfFile, setPdfFile] = useState<File | null>(null);
+  const [pdfUploading, setPdfUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -140,6 +144,102 @@ const NeuroBot = () => {
     }
   };
 
+  const handlePdfUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (file.type !== 'application/pdf') {
+      setMessages(prev => [...prev, {
+        role: 'assistant',
+        content: 'Please upload a PDF file.',
+        timestamp: new Date(),
+        source: 'cached'
+      }]);
+      return;
+    }
+
+    setPdfFile(file);
+    setPdfUploading(true);
+
+    setMessages(prev => [...prev, {
+      role: 'user',
+      content: `📄 Uploaded: ${file.name}`,
+      timestamp: new Date(),
+      pdfName: file.name
+    }]);
+
+    setMessages(prev => [...prev, {
+      role: 'assistant',
+      content: `I'm analyzing "${file.name}"... This may take a moment.`,
+      timestamp: new Date(),
+      source: 'cached'
+    }]);
+
+    try {
+      const res = await mlAPI.uploadPDF(file, 'general');
+      
+      const summary = res.data?.summary || '';
+      const topics = res.data?.topics || [];
+      const questions = res.data?.questions || [];
+      const keyPoints = res.data?.keyPoints || [];
+      const addedToStudyPlan = res.data?.addedToStudyPlan || 0;
+
+      let responseContent = `📄 **PDF Analysis Complete**\n\n`;
+      
+      if (summary) {
+        responseContent += `${summary}\n\n`;
+      }
+      
+      if (keyPoints.length > 0) {
+        responseContent += `**Key Points:**\n`;
+        keyPoints.forEach((point: string, idx: number) => {
+          responseContent += `• ${point}\n`;
+        });
+        responseContent += '\n';
+      }
+
+      if (topics.length > 0) {
+        responseContent += `**Topics Covered:**\n`;
+        topics.forEach((topic: string, idx: number) => {
+          responseContent += `${idx + 1}. ${topic}\n`;
+        });
+        responseContent += '\n';
+      }
+
+      if (questions.length > 0) {
+        responseContent += `**Practice Questions:**\n`;
+        questions.forEach((q: string, idx: number) => {
+          responseContent += `${idx + 1}. ${q}\n`;
+        });
+      }
+
+      if (addedToStudyPlan > 0) {
+        responseContent += `\n✨ ${addedToStudyPlan} topic(s) added to your study plan!`;
+      }
+
+      setMessages(prev => [...prev, {
+        role: 'assistant',
+        content: responseContent,
+        timestamp: new Date(),
+        source: 'pdf'
+      }]);
+
+    } catch (err: any) {
+      setMessages(prev => [...prev, {
+        role: 'assistant',
+        content: `Sorry, I couldn't process the PDF. ${err.response?.data?.message || 'Please try again.'}`,
+        timestamp: new Date(),
+        source: 'cached'
+      }]);
+    } finally {
+      setPdfUploading(false);
+      setPdfFile(null);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+    }
+  };
+
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
@@ -152,6 +252,7 @@ const NeuroBot = () => {
       case 'cached': return 'info';
       case 'hardcoded': return 'success';
       case 'ai': return 'warning';
+      case 'pdf': return 'primary';
       default: return 'default';
     }
   };
@@ -161,6 +262,7 @@ const NeuroBot = () => {
       case 'cached': return 'Cached';
       case 'hardcoded': return 'Quick Reply';
       case 'ai': return 'AI';
+      case 'pdf': return 'PDF Analysis';
       default: return '';
     }
   };
@@ -332,22 +434,38 @@ const NeuroBot = () => {
             <div ref={messagesEndRef} />
           </Box>
 
-          <Box sx={{ p: 2, display: 'flex', gap: 1, borderTop: 1, borderColor: 'divider' }}>
+          <Box sx={{ p: 2, display: 'flex', gap: 1, borderTop: 1, borderColor: 'divider', alignItems: 'flex-end' }}>
+            <input
+              type="file"
+              accept="application/pdf"
+              ref={fileInputRef}
+              onChange={handlePdfUpload}
+              style={{ display: 'none' }}
+            />
+            <IconButton
+              color="primary"
+              onClick={() => fileInputRef.current?.click()}
+              disabled={pdfUploading || loading}
+              sx={{ mb: 0.5 }}
+              title="Upload PDF"
+            >
+              {pdfUploading ? <CircularProgress size={20} /> : <PictureAsPdf />}
+            </IconButton>
             <TextField
               fullWidth
-              placeholder="Ask Neuro Bot..."
+              placeholder="Ask Neuro Bot or upload a PDF..."
               value={message}
               onChange={(e) => setMessage(e.target.value)}
               onKeyPress={handleKeyPress}
               multiline
               maxRows={4}
               size="small"
-              disabled={loading}
+              disabled={loading || pdfUploading}
             />
             <IconButton
               color="primary"
               onClick={handleSend}
-              disabled={!message.trim() || loading}
+              disabled={!message.trim() || loading || pdfUploading}
             >
               <Send />
             </IconButton>
