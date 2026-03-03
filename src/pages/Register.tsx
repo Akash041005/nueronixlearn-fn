@@ -81,8 +81,6 @@ const Register = () => {
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
             {[
               { icon: '🎯', title: 'AI-powered learning paths' },
-              { icon: '📚', title: '500+ courses available' },
-              { icon: '🌍', title: 'International phone support' },
               { icon: '🔒', title: 'Secure & private' }
             ].map((item) => (
               <Box key={item.title} sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>

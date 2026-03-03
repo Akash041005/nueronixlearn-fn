@@ -2,14 +2,36 @@
 
 import axios from 'axios';
 
-const API_URL = (import.meta as any).env?.VITE_API_URL || '/api';
+const getApiUrl = () => {
+  if (import.meta.env.DEV) {
+    return '/api';
+  }
+  return import.meta.env.VITE_API_URL || '/api';
+};
+
+const API_URL = getApiUrl();
 
 const api = axios.create({
   baseURL: API_URL,
   headers: {
     'Content-Type': 'application/json'
-  }
+  },
+  withCredentials: false
 });
+
+let isRefreshing = false;
+let failedQueue: Array<{ resolve: (value: unknown) => void; reject: (reason?: unknown) => void }> = [];
+
+const processQueue = (error: unknown) => {
+  failedQueue.forEach(prom => {
+    if (error) {
+      prom.reject(error);
+    } else {
+      prom.resolve(undefined);
+    }
+  });
+  failedQueue = [];
+};
 
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem('token') || localStorage.getItem('adminToken');
@@ -21,15 +43,47 @@ api.interceptors.request.use((config) => {
 
 api.interceptors.response.use(
   (response) => response,
-  (error) => {
+  async (error) => {
+    const originalRequest = error.config;
+    
+    if (error.response?.status === 401 && !originalRequest._retry) {
+      if (isRefreshing) {
+        return new Promise((resolve, reject) => {
+          failedQueue.push({ resolve, reject });
+        })
+          .then(() => api(originalRequest))
+          .catch(err => Promise.reject(err));
+      }
+
+      originalRequest._retry = true;
+      isRefreshing = true;
+
+      const token = localStorage.getItem('token');
+      if (token) {
+        try {
+          const res = await axios.post(`${API_URL}/auth/refresh`);
+          const newToken = res.data.token;
+          localStorage.setItem('token', newToken);
+          processQueue(null);
+          originalRequest.headers.Authorization = `Bearer ${newToken}`;
+          return api(originalRequest);
+        } catch (refreshError) {
+          processQueue(refreshError);
+          localStorage.removeItem('token');
+          localStorage.removeItem('adminToken');
+          window.location.href = '/login';
+          return Promise.reject(refreshError);
+        } finally {
+          isRefreshing = false;
+        }
+      } else {
+        localStorage.removeItem('token');
+        localStorage.removeItem('adminToken');
+        window.location.href = '/login';
+      }
+    }
+    
     console.error('API Error:', error.response?.status, error.response?.data || error.message);
-    if (error.response?.status === 401) {
-      localStorage.removeItem('token');
-      window.location.href = '/login';
-    }
-    if (error.response?.status === 404) {
-      console.warn('API endpoint not found:', error.config?.url);
-    }
     return Promise.reject(error);
   }
 );

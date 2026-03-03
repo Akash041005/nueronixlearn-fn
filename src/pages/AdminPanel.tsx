@@ -403,10 +403,13 @@ const AdminPanel = () => {
     }
     setSaving(true);
     try {
-      // Use the register API or admin create user API
-      const res = await fetch('http://localhost:5000/api/auth/register', {
+      const token = localStorage.getItem('adminToken');
+      const res = await fetch(`${import.meta.env.VITE_API_URL || '/api'}/auth/register`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
         body: JSON.stringify({ ...newTeacher, role: 'teacher' })
       });
       if (!res.ok) throw new Error('Failed to create teacher');
@@ -428,7 +431,8 @@ const AdminPanel = () => {
     }
     setSaving(true);
     try {
-      const res = await fetch('http://localhost:5000/api/courses', {
+      const token = localStorage.getItem('adminToken');
+      const res = await fetch(`${import.meta.env.VITE_API_URL || '/api'}/courses`, {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',
