@@ -8,7 +8,7 @@ import {
 import { Add, Delete, ArrowBack, ArrowForward, Timer } from '@mui/icons-material';
 import { examsAPI } from '../services/api';
 
-const ACCENT = '#00FF88';
+const ACCENT = '#2E7D32';
 
 interface Question {
   text: string;

@@ -9,8 +9,8 @@ import KeyboardBackground from '../components/KeyboardBackground';
 
 // ─── Theme ────────────────────────────────────────────────────────────────────
 
-const DARK_ACCENT  = '#4fc3f7';
-const LIGHT_ACCENT = '#0288d1';
+const DARK_ACCENT  = '#2E7D32';
+const LIGHT_ACCENT = '#2E7D32';
 
 // ─── Data ─────────────────────────────────────────────────────────────────────
 
@@ -111,14 +111,14 @@ function MagBtn({
         endIcon={endIcon}
         onClick={onClick}
         sx={{
-          px: 3.5, py: 1.3, fontSize: '0.9rem', fontWeight: 700, borderRadius: '10px',
-          transition: 'box-shadow 0.2s, background-color 0.2s',
+          px: 3.5, py: 1.3, fontSize: '1rem', fontWeight: 700, borderRadius: '10px',
+          transition: 'all 0.2s ease',
           ...(variant === 'contained' ? {
             bgcolor: accent, color: '#fff',
-            '&:hover': { bgcolor: mode === 'dark' ? '#29b6f6' : '#01579b', boxShadow: `0 0 28px 4px ${accent}44` },
+            '&:hover': { bgcolor: mode === 'dark' ? '#29b6f6' : '#01579b', boxShadow: 'none' },
           } : {
             borderColor: `${accent}66`, color: accent,
-            '&:hover': { borderColor: accent, bgcolor: `${accent}0d`, boxShadow: `0 0 18px 2px ${accent}22` },
+            '&:hover': { borderColor: accent, bgcolor: `${accent}0d`, boxShadow: 'none' },
           }),
         }}
       >
@@ -158,13 +158,6 @@ export default function Landing() {
             : 'radial-gradient(ellipse 90% 70% at 50% 40%, rgba(255,255,255,0.4) 0%, rgba(255,255,255,0.96) 75%)',
         }} />
 
-        {/* Accent glow */}
-        <Box sx={{
-          position: 'absolute', top: '-5%', left: '50%', transform: 'translateX(-50%)',
-          width: 600, height: 350, zIndex: 1, pointerEvents: 'none',
-          background: `radial-gradient(ellipse, ${accent}14 0%, transparent 70%)`,
-        }} />
-
         <Container maxWidth="lg" sx={{ position: 'relative', zIndex: 2, pt: { xs: 12, md: 0 } }}>
 
           {/* Badge */}
@@ -174,7 +167,7 @@ export default function Landing() {
               px: 1.5, py: 0.5, mb: 4,
               border: `1px solid ${accent}44`, borderRadius: '20px', bgcolor: `${accent}0d`,
             }}>
-              <Box sx={{ width: 6, height: 6, borderRadius: '50%', bgcolor: accent, boxShadow: `0 0 8px ${accent}` }} />
+              <Box sx={{ width: 6, height: 6, borderRadius: '50%', bgcolor: accent }} />
               <Typography sx={{ fontSize: '0.7rem', fontWeight: 700, letterSpacing: '0.1em', color: accent, textTransform: 'uppercase' }}>
                 AI-Powered Learning Platform
               </Typography>
@@ -188,7 +181,7 @@ export default function Landing() {
               fontWeight: 800, lineHeight: 1.02, letterSpacing: '-0.04em', mb: 3,
             }}>
               Learn smarter.{' '}
-              <Box component="span" sx={{ color: accent, textShadow: `0 0 40px ${accent}66` }}>
+              <Box component="span" sx={{ color: accent }}>
                 Not harder.
               </Box>
             </Typography>

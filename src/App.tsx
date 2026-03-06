@@ -20,7 +20,7 @@ class ErrorBoundary extends Component<{ children: ReactNode }, EBState> {
         <Box sx={{ minHeight: '100vh', bgcolor: '#0a0a0a', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 2, p: 4 }}>
           <Typography variant="h5" color="#e57373" fontWeight={700}>Something went wrong</Typography>
           <Typography variant="body2" color="#555" sx={{ maxWidth: 480, textAlign: 'center' }}>{this.state.message}</Typography>
-          <Button variant="outlined" sx={{ color: '#4fc3f7', borderColor: '#4fc3f7', mt: 1 }} onClick={() => { this.setState({ hasError: false, message: '' }); window.location.reload(); }}>
+          <Button variant="outlined" sx={{ color: '#2E7D32', borderColor: '#2E7D32', mt: 1 }} onClick={() => { this.setState({ hasError: false, message: '' }); window.location.reload(); }}>
             Reload page
           </Button>
         </Box>

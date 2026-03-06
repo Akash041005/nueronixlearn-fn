@@ -10,7 +10,7 @@ import {
 import { useAuth } from '../context/AuthContext';
 import { useTheme as useCustomTheme } from '../context/ThemeContext';
 
-const ACCENT = '#00FF88';
+const ACCENT = '#2E7D32';
 
 const Navbar = () => {
   const { user, logout } = useAuth();

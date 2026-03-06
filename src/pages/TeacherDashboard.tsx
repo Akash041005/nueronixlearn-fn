@@ -10,7 +10,7 @@ import { useTheme as useCustomTheme } from '../context/ThemeContext';
 import { useAuth } from '../context/AuthContext';
 import api from '../services/api';
 
-const ACCENT = '#00FF88';
+const ACCENT = '#2E7D32';
 
 const StatCard = ({ label, value, icon, sub }: any) => (
   <Card>

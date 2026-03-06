@@ -26,14 +26,14 @@ interface VariantConfig {
 }
 
 const VARIANTS: Record<Variant, VariantConfig> = {
-  dashboard: { darkColor: '#4fc3f7', lightColor: '#0288d1', quantity: 55, speed: 0.3,  connectionDistance: 120, connectOpacity: 0.12, dotOpacity: 0.65, pulsate: false },
+  dashboard: { darkColor: '#2E7D32', lightColor: '#2E7D32', quantity: 55, speed: 0.3,  connectionDistance: 120, connectOpacity: 0.12, dotOpacity: 0.65, pulsate: false },
   study:     { darkColor: '#81c784', lightColor: '#2e7d32', quantity: 45, speed: 0.2,  connectionDistance: 100, connectOpacity: 0.10, dotOpacity: 0.55, pulsate: false },
   courses:   { darkColor: '#ffb74d', lightColor: '#e65100', quantity: 50, speed: 0.35, connectionDistance: 110, connectOpacity: 0.11, dotOpacity: 0.50, pulsate: true  },
   exams:     { darkColor: '#e57373', lightColor: '#c62828', quantity: 40, speed: 0.25, connectionDistance: 90,  connectOpacity: 0.09, dotOpacity: 0.50, pulsate: true  },
   diary:     { darkColor: '#ce93d8', lightColor: '#7b1fa2', quantity: 40, speed: 0.18, connectionDistance: 95,  connectOpacity: 0.09, dotOpacity: 0.45, pulsate: false },
   admin:     { darkColor: '#e57373', lightColor: '#b71c1c', quantity: 35, speed: 0.22, connectionDistance: 85,  connectOpacity: 0.08, dotOpacity: 0.40, pulsate: false },
-  landing:   { darkColor: '#4fc3f7', lightColor: '#01579b', quantity: 60, speed: 0.3,  connectionDistance: 130, connectOpacity: 0.14, dotOpacity: 0.60, pulsate: false },
-  default:   { darkColor: '#4fc3f7', lightColor: '#0288d1', quantity: 45, speed: 0.28, connectionDistance: 110, connectOpacity: 0.10, dotOpacity: 0.50, pulsate: false },
+  landing:   { darkColor: '#2E7D32', lightColor: '#2E7D32', quantity: 60, speed: 0.3,  connectionDistance: 130, connectOpacity: 0.14, dotOpacity: 0.60, pulsate: false },
+  default:   { darkColor: '#2E7D32', lightColor: '#2E7D32', quantity: 45, speed: 0.28, connectionDistance: 110, connectOpacity: 0.10, dotOpacity: 0.50, pulsate: false },
 };
 
 // ── Particle type ─────────────────────────────────────────────────────────────
@@ -67,7 +67,7 @@ export default function PageBackground({ variant = 'default', children }: Props)
   const animRef   = useRef<number>(0);
   const cfg       = VARIANTS[variant];
 
-  const bgColor   = isDark ? '#0a0a0a' : '#ffffff';
+  const bgColor   = isDark ? '#000000' : '#ffffff';
   const hexColor  = isDark ? cfg.darkColor : cfg.lightColor;
 
   useEffect(() => {

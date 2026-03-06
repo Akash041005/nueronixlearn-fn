@@ -1,9 +1,8 @@
 import { createTheme, ThemeOptions, alpha } from '@mui/material/styles';
 
-const GREEN_ACCENT = '#00FF88';
-const GREEN_LIGHT = '#4DFFA3';
-const GREEN_DARK = '#00CC6A';
-const GREEN_NEON = '#00FF94';
+const GREEN_ACCENT = '#2E7D32';
+const GREEN_LIGHT = '#4CAF50';
+const GREEN_DARK = '#1B5E20';
 
 const getDesignTokens = (mode: 'light' | 'dark'): ThemeOptions => ({
   palette: {
@@ -12,55 +11,61 @@ const getDesignTokens = (mode: 'light' | 'dark'): ThemeOptions => ({
       main: GREEN_ACCENT,
       light: GREEN_LIGHT,
       dark: GREEN_DARK,
-      contrastText: mode === 'dark' ? '#000000' : '#000000'
+      contrastText: '#FFFFFF'
     },
     secondary: {
-      main: mode === 'dark' ? '#1B5E20' : '#2E7D32',
-      light: mode === 'dark' ? '#2E7D32' : '#4CAF50',
-      dark: mode === 'dark' ? '#0D3D12' : '#1B5E20'
+      main: mode === 'dark' ? '#424242' : '#757575',
+      light: mode === 'dark' ? '#616161' : '#9E9E9E',
+      dark: mode === 'dark' ? '#212121' : '#616161'
     },
-    error: { main: '#FF4757' },
-    warning: { main: '#FFBE0B' },
-    info: { main: '#00D9FF' },
+    error: { main: '#D32F2F' },
+    warning: { main: '#F57C00' },
+    info: { main: '#0288D1' },
     success: { main: GREEN_ACCENT },
     ...(mode === 'dark'
       ? {
-          background: { default: '#050A0D', paper: '#0A1117' },
-          text: { primary: '#FFFFFF', secondary: '#8A9BA8' },
-          divider: 'rgba(0, 255, 136, 0.1)'
+          background: { default: '#000000', paper: '#0A0A0A' },
+          text: { primary: '#FFFFFF', secondary: '#B0B0B0' },
+          divider: 'rgba(255, 255, 255, 0.12)'
         }
       : {
-          background: { default: '#F5F7F9', paper: '#FFFFFF' },
-          text: { primary: '#0D1117', secondary: '#5C6370' },
-          divider: 'rgba(0, 0, 0, 0.08)'
+          background: { default: '#FFFFFF', paper: '#FAFAFA' },
+          text: { primary: '#000000', secondary: '#5C6370' },
+          divider: 'rgba(0, 0, 0, 0.12)'
         })
   },
   typography: {
-    fontFamily: '"DM Sans", "Inter", system-ui, sans-serif',
-    h1: { fontFamily: '"Space Grotesk", sans-serif', fontWeight: 700, letterSpacing: '-0.03em', lineHeight: 1.1 },
-    h2: { fontFamily: '"Space Grotesk", sans-serif', fontWeight: 700, letterSpacing: '-0.025em', lineHeight: 1.15 },
-    h3: { fontFamily: '"Space Grotesk", sans-serif', fontWeight: 600, letterSpacing: '-0.02em', lineHeight: 1.2 },
-    h4: { fontFamily: '"Space Grotesk", sans-serif', fontWeight: 600, letterSpacing: '-0.015em', lineHeight: 1.25 },
-    h5: { fontFamily: '"Space Grotesk", sans-serif', fontWeight: 600, letterSpacing: '-0.01em' },
-    h6: { fontFamily: '"Space Grotesk", sans-serif', fontWeight: 600, letterSpacing: '-0.005em' },
-    subtitle1: { fontWeight: 500, letterSpacing: '-0.01em' },
-    subtitle2: { fontWeight: 500, letterSpacing: '0.02em', textTransform: 'uppercase' as const, fontSize: '0.7rem' },
-    body1: { lineHeight: 1.65 },
-    body2: { lineHeight: 1.6 },
-    button: { textTransform: 'none' as const, fontWeight: 500, letterSpacing: '0.01em' },
-    overline: { fontFamily: '"Space Grotesk", sans-serif', fontWeight: 600, letterSpacing: '0.12em', fontSize: '0.65rem' }
+    fontFamily: '"Inter", "Roboto", "Helvetica", "Arial", sans-serif',
+    htmlFontSize: 16,
+    h1: { fontWeight: 700, fontSize: '2.75rem', letterSpacing: '-0.02em' },
+    h2: { fontWeight: 700, fontSize: '2.25rem', letterSpacing: '-0.01em' },
+    h3: { fontWeight: 600, fontSize: '1.875rem' },
+    h4: { fontWeight: 600, fontSize: '1.5rem' },
+    h5: { fontWeight: 600, fontSize: '1.25rem' },
+    h6: { fontWeight: 600, fontSize: '1.125rem' },
+    subtitle1: { fontWeight: 500, fontSize: '1.1rem' },
+    subtitle2: { fontWeight: 500, fontSize: '0.95rem' },
+    body1: { fontSize: '1.05rem', lineHeight: 1.7 },
+    body2: { fontSize: '0.95rem', lineHeight: 1.6 },
+    button: { textTransform: 'none' as const, fontWeight: 600, fontSize: '1rem' },
+    caption: { fontSize: '0.85rem' },
+    overline: { fontWeight: 600, fontSize: '0.75rem', letterSpacing: '0.08em' }
   },
   shape: { borderRadius: 8 },
   components: {
     MuiCssBaseline: {
       styleOverrides: {
+        html: {
+          fontSize: '16px',
+        },
         body: {
-          fontFamily: '"DM Sans", "Inter", system-ui, sans-serif',
+          fontFamily: '"Inter", "Roboto", "Helvetica", "Arial", sans-serif',
+          fontSize: '1rem',
           scrollbarWidth: 'thin',
-          scrollbarColor: `${GREEN_ACCENT} #1a1a1a`,
+          scrollbarColor: `${mode === 'dark' ? '#333' : '#ccc'} ${mode === 'dark' ? '#000' : '#f0f0f0'}`,
           '&::-webkit-scrollbar': { width: '8px' },
-          '&::-webkit-scrollbar-track': { background: mode === 'dark' ? '#0A1117' : '#f1f1f1' },
-          '&::-webkit-scrollbar-thumb': { background: GREEN_ACCENT, borderRadius: '4px' }
+          '&::-webkit-scrollbar-track': { background: mode === 'dark' ? '#0A0A0A' : '#f0f0f0' },
+          '&::-webkit-scrollbar-thumb': { background: mode === 'dark' ? '#333' : '#ccc', borderRadius: '4px' }
         }
       }
     },
@@ -68,38 +73,38 @@ const getDesignTokens = (mode: 'light' | 'dark'): ThemeOptions => ({
       styleOverrides: {
         root: ({ theme }) => ({
           borderRadius: 8,
-          padding: '10px 22px',
-          fontSize: '0.875rem',
+          padding: '12px 24px',
+          fontSize: '1rem',
           fontWeight: 600,
-          transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+          transition: 'all 0.2s ease',
           boxShadow: 'none',
           '&:hover': { 
-            boxShadow: mode === 'dark' ? `0 0 20px ${alpha(GREEN_ACCENT, 0.3)}` : 'none',
-            transform: 'translateY(-2px)'
+            boxShadow: 'none',
+            transform: 'translateY(-1px)'
           },
           '&:active': { transform: 'translateY(0)' }
         }),
         contained: ({ theme }) => ({
-          background: `linear-gradient(135deg, ${GREEN_ACCENT} 0%, ${GREEN_DARK} 100%)`,
-          color: '#000',
+          backgroundColor: GREEN_ACCENT,
+          color: '#fff',
           '&:hover': { 
-            background: `linear-gradient(135deg, ${GREEN_LIGHT} 0%, ${GREEN_ACCENT} 100%)`,
-            boxShadow: `0 0 25px ${alpha(GREEN_ACCENT, 0.4)}`
+            backgroundColor: GREEN_DARK,
+            boxShadow: 'none'
           }
         }),
         outlined: ({ theme }) => ({
-          borderColor: GREEN_ACCENT,
-          color: GREEN_ACCENT,
+          borderColor: mode === 'dark' ? '#333' : '#ccc',
+          color: mode === 'dark' ? '#fff' : '#000',
           '&:hover': {
-            borderColor: GREEN_LIGHT,
-            backgroundColor: alpha(GREEN_ACCENT, 0.08),
-            boxShadow: `0 0 15px ${alpha(GREEN_ACCENT, 0.2)}`
+            borderColor: GREEN_ACCENT,
+            backgroundColor: alpha(GREEN_ACCENT, 0.05),
+            boxShadow: 'none'
           }
         }),
         text: ({ theme }) => ({
-          color: mode === 'dark' ? '#fff' : '#0D1117',
+          color: mode === 'dark' ? '#fff' : '#000',
           '&:hover': {
-            backgroundColor: alpha(GREEN_ACCENT, 0.08)
+            backgroundColor: alpha(GREEN_ACCENT, 0.05)
           }
         })
       }
@@ -109,17 +114,16 @@ const getDesignTokens = (mode: 'light' | 'dark'): ThemeOptions => ({
         root: ({ theme }) => ({
           borderRadius: 12,
           boxShadow: mode === 'dark' 
-            ? '0 4px 20px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(0, 255, 136, 0.05)' 
-            : '0 4px 20px rgba(0, 0, 0, 0.08)',
+            ? '0 2px 8px rgba(0, 0, 0, 0.5)' 
+            : '0 2px 8px rgba(0, 0, 0, 0.1)',
           backgroundImage: 'none',
-          background: mode === 'dark'
-            ? 'linear-gradient(180deg, rgba(10, 17, 23, 0.9) 0%, rgba(5, 10, 13, 0.95) 100%)'
-            : '#FFFFFF',
-          transition: 'all 0.3s ease',
+          background: mode === 'dark' ? '#0A0A0A' : '#FFFFFF',
+          border: mode === 'dark' ? '1px solid #1a1a1a' : '1px solid #e0e0e0',
+          transition: 'all 0.2s ease',
           '&:hover': {
             boxShadow: mode === 'dark'
-              ? '0 8px 30px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(0, 255, 136, 0.15)'
-              : '0 8px 30px rgba(0, 0, 0, 0.12)',
+              ? '0 4px 16px rgba(0, 0, 0, 0.6)'
+              : '0 4px 16px rgba(0, 0, 0, 0.1)',
             transform: 'translateY(-2px)'
           }
         })
@@ -129,9 +133,7 @@ const getDesignTokens = (mode: 'light' | 'dark'): ThemeOptions => ({
       styleOverrides: {
         root: ({ theme }) => ({
           backgroundImage: 'none',
-          background: mode === 'dark'
-            ? 'linear-gradient(180deg, rgba(10, 17, 23, 0.95) 0%, rgba(5, 10, 13, 0.98) 100%)'
-            : '#FFFFFF'
+          background: mode === 'dark' ? '#0A0A0A' : '#FFFFFF'
         })
       }
     },
@@ -139,12 +141,9 @@ const getDesignTokens = (mode: 'light' | 'dark'): ThemeOptions => ({
       styleOverrides: {
         root: ({ theme }) => ({
           backgroundImage: 'none',
-          background: mode === 'dark'
-            ? 'rgba(5, 10, 13, 0.95)'
-            : 'rgba(255, 255, 255, 0.95)',
-          backdropFilter: 'blur(10px)',
+          background: mode === 'dark' ? '#000000' : '#FFFFFF',
           boxShadow: 'none',
-          borderBottom: `1px solid ${mode === 'dark' ? 'rgba(0, 255, 136, 0.1)' : 'rgba(0, 0, 0, 0.08)'}`
+          borderBottom: `1px solid ${mode === 'dark' ? '#1a1a1a' : '#e0e0e0'}`
         })
       }
     },
@@ -154,22 +153,23 @@ const getDesignTokens = (mode: 'light' | 'dark'): ThemeOptions => ({
         root: ({ theme }) => ({
           '& .MuiOutlinedInput-root': {
             borderRadius: 8,
-            fontSize: '0.9rem',
+            fontSize: '1rem',
             transition: 'all 0.2s ease',
             '& fieldset': {
-              borderColor: mode === 'dark' ? 'rgba(0, 255, 136, 0.2)' : 'rgba(0, 0, 0, 0.15)',
+              borderColor: mode === 'dark' ? '#333' : '#ccc',
               transition: 'all 0.2s ease'
             },
             '&:hover fieldset': { borderColor: GREEN_ACCENT },
             '&.Mui-focused fieldset': { 
               borderColor: GREEN_ACCENT, 
               borderWidth: 2,
-              boxShadow: `0 0 10px ${alpha(GREEN_ACCENT, 0.15)}`
+              boxShadow: 'none'
             }
           },
           '& .MuiInputLabel-root.Mui-focused': { 
             color: GREEN_ACCENT,
-            fontWeight: 600
+            fontWeight: 600,
+            fontSize: '1rem'
           }
         })
       }
@@ -179,12 +179,9 @@ const getDesignTokens = (mode: 'light' | 'dark'): ThemeOptions => ({
         root: ({ theme }) => ({
           borderRadius: 6,
           fontWeight: 600,
-          fontSize: '0.75rem',
-          letterSpacing: '0.01em',
-          border: `1px solid ${mode === 'dark' ? 'rgba(0, 255, 136, 0.2)' : 'rgba(0, 0, 0, 0.1)'}`,
-          backgroundColor: mode === 'dark'
-            ? 'rgba(0, 255, 136, 0.08)'
-            : 'rgba(0, 0, 0, 0.04)'
+          fontSize: '0.85rem',
+          border: `1px solid ${mode === 'dark' ? '#333' : '#ddd'}`,
+          backgroundColor: mode === 'dark' ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.04)'
         }),
         colorPrimary: {
           backgroundColor: alpha(GREEN_ACCENT, 0.15),
@@ -197,14 +194,14 @@ const getDesignTokens = (mode: 'light' | 'dark'): ThemeOptions => ({
           border: `1px solid ${alpha(GREEN_ACCENT, 0.3)}`
         }),
         colorWarning: ({ theme }) => ({
-          backgroundColor: alpha('#FFBE0B', 0.15),
-          color: '#FFBE0B',
-          border: `1px solid ${alpha('#FFBE0B', 0.3)}`
+          backgroundColor: alpha('#F57C00', 0.15),
+          color: '#F57C00',
+          border: `1px solid ${alpha('#F57C00', 0.3)}`
         }),
         colorError: ({ theme }) => ({
-          backgroundColor: alpha('#FF4757', 0.15),
-          color: '#FF4757',
-          border: `1px solid ${alpha('#FF4757', 0.3)}`
+          backgroundColor: alpha('#D32F2F', 0.15),
+          color: '#D32F2F',
+          border: `1px solid ${alpha('#D32F2F', 0.3)}`
         })
       }
     },
@@ -212,13 +209,9 @@ const getDesignTokens = (mode: 'light' | 'dark'): ThemeOptions => ({
       styleOverrides: {
         paper: ({ theme }) => ({
           borderRadius: 16,
-          border: `1px solid ${mode === 'dark' ? 'rgba(0, 255, 136, 0.15)' : 'rgba(0, 0, 0, 0.1)'}`,
-          background: mode === 'dark'
-            ? 'linear-gradient(180deg, #0A1117 0%, #050A0D 100%)'
-            : '#FFFFFF',
-          boxShadow: mode === 'dark'
-            ? '0 20px 60px rgba(0, 0, 0, 0.6), 0 0 40px rgba(0, 255, 136, 0.05)'
-            : '0 20px 60px rgba(0, 0, 0, 0.2)'
+          border: `1px solid ${mode === 'dark' ? '#1a1a1a' : '#e0e0e0'}`,
+          background: mode === 'dark' ? '#0A0A0A' : '#FFFFFF',
+          boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3)'
         })
       }
     },
@@ -226,31 +219,28 @@ const getDesignTokens = (mode: 'light' | 'dark'): ThemeOptions => ({
       styleOverrides: {
         root: ({ theme }) => ({
           borderRadius: 4,
-          height: 6,
-          backgroundColor: mode === 'dark'
-            ? 'rgba(0, 255, 136, 0.1)'
-            : 'rgba(0, 0, 0, 0.08)'
+          height: 8,
+          backgroundColor: mode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'
         }),
         bar: { 
           borderRadius: 4, 
-          background: `linear-gradient(90deg, ${GREEN_DARK} 0%, ${GREEN_ACCENT} 100%)`
+          backgroundColor: GREEN_ACCENT
         }
       }
     },
     MuiTableCell: {
       styleOverrides: {
         head: ({ theme }) => ({
-          fontFamily: '"Space Grotesk", sans-serif',
           fontWeight: 600,
-          fontSize: '0.7rem',
-          letterSpacing: '0.08em',
-          textTransform: 'uppercase',
-          color: mode === 'dark' ? GREEN_ACCENT : '#2E7D32',
-          borderColor: mode === 'dark' ? 'rgba(0, 255, 136, 0.1)' : 'rgba(0, 0, 0, 0.08)',
-          backgroundColor: mode === 'dark' ? 'rgba(0, 255, 136, 0.03)' : 'rgba(0, 0, 0, 0.02)'
+          fontSize: '0.9rem',
+          letterSpacing: '0.02em',
+          color: mode === 'dark' ? '#fff' : '#000',
+          borderColor: mode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.12)',
+          backgroundColor: mode === 'dark' ? '#0A0A0A' : '#F5F5F5'
         }),
         body: ({ theme }) => ({
-          borderColor: mode === 'dark' ? 'rgba(0, 255, 136, 0.05)' : 'rgba(0, 0, 0, 0.05)'
+          fontSize: '1rem',
+          borderColor: mode === 'dark' ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.08)'
         })
       }
     },
@@ -258,9 +248,7 @@ const getDesignTokens = (mode: 'light' | 'dark'): ThemeOptions => ({
       styleOverrides: {
         root: ({ theme }) => ({
           '&:hover': {
-            backgroundColor: mode === 'dark'
-              ? 'rgba(0, 255, 136, 0.04)'
-              : 'rgba(0, 0, 0, 0.02)'
+            backgroundColor: mode === 'dark' ? 'rgba(255, 255, 255, 0.03)' : 'rgba(0, 0, 0, 0.02)'
           }
         })
       }
@@ -269,30 +257,26 @@ const getDesignTokens = (mode: 'light' | 'dark'): ThemeOptions => ({
       styleOverrides: {
         paper: ({ theme }) => ({
           borderRadius: 10,
-          border: `1px solid ${mode === 'dark' ? 'rgba(0, 255, 136, 0.15)' : 'rgba(0, 0, 0, 0.1)'}`,
-          boxShadow: mode === 'dark'
-            ? '0 10px 40px rgba(0,0,0,0.5), 0 0 20px rgba(0, 255, 136, 0.05)'
-            : '0 10px 40px rgba(0,0,0,0.15)',
-          background: mode === 'dark'
-            ? 'linear-gradient(180deg, #0A1117 0%, #050A0D 100%)'
-            : '#FFFFFF'
+          border: `1px solid ${mode === 'dark' ? '#1a1a1a' : '#e0e0e0'}`,
+          boxShadow: '0 4px 16px rgba(0, 0, 0, 0.2)',
+          background: mode === 'dark' ? '#0A0A0A' : '#FFFFFF'
         })
       }
     },
     MuiMenuItem: {
       styleOverrides: {
         root: ({ theme }) => ({
-          fontSize: '0.875rem',
+          fontSize: '1rem',
           borderRadius: 6,
           margin: '2px 6px',
-          padding: '8px 14px',
+          padding: '10px 16px',
           '&:hover': {
-            backgroundColor: alpha(GREEN_ACCENT, 0.1)
+            backgroundColor: alpha(GREEN_ACCENT, 0.08)
           },
           '&.Mui-selected': {
-            backgroundColor: alpha(GREEN_ACCENT, 0.15),
+            backgroundColor: alpha(GREEN_ACCENT, 0.12),
             '&:hover': {
-              backgroundColor: alpha(GREEN_ACCENT, 0.2)
+              backgroundColor: alpha(GREEN_ACCENT, 0.16)
             }
           }
         })
@@ -302,13 +286,10 @@ const getDesignTokens = (mode: 'light' | 'dark'): ThemeOptions => ({
       styleOverrides: {
         tooltip: ({ theme }) => ({
           borderRadius: 6,
-          fontSize: '0.78rem',
+          fontSize: '0.85rem',
           fontWeight: 500,
-          backgroundColor: mode === 'dark' ? '#0A1117' : '#1a1a1a',
-          border: `1px solid ${mode === 'dark' ? 'rgba(0, 255, 136, 0.2)' : 'rgba(0, 0, 0, 0.1)'}`,
-          boxShadow: mode === 'dark'
-            ? '0 4px 20px rgba(0, 0, 0, 0.4), 0 0 10px rgba(0, 255, 136, 0.1)'
-            : '0 4px 20px rgba(0, 0, 0, 0.15)'
+          backgroundColor: mode === 'dark' ? '#1a1a1a' : '#333',
+          boxShadow: '0 2px 8px rgba(0, 0, 0, 0.2)'
         })
       }
     },
@@ -320,8 +301,8 @@ const getDesignTokens = (mode: 'light' | 'dark'): ThemeOptions => ({
             minHeight: 48,
             textTransform: 'none',
             fontWeight: 600,
-            fontSize: '0.875rem',
-            color: mode === 'dark' ? '#8A9BA8' : '#5C6370',
+            fontSize: '1rem',
+            color: mode === 'dark' ? '#B0B0B0' : '#5C6370',
             '&.Mui-selected': {
               color: GREEN_ACCENT
             }
@@ -329,8 +310,7 @@ const getDesignTokens = (mode: 'light' | 'dark'): ThemeOptions => ({
           '& .MuiTabs-indicator': {
             height: 3,
             borderRadius: '3px 3px 0 0',
-            background: `linear-gradient(90deg, ${GREEN_DARK} 0%, ${GREEN_ACCENT} 100%)`,
-            boxShadow: `0 0 10px ${alpha(GREEN_ACCENT, 0.5)}`
+            backgroundColor: GREEN_ACCENT
           }
         })
       }
@@ -352,8 +332,7 @@ const getDesignTokens = (mode: 'light' | 'dark'): ThemeOptions => ({
           transition: 'all 0.2s ease',
           '&:hover': {
             backgroundColor: alpha(GREEN_ACCENT, 0.1),
-            color: GREEN_ACCENT,
-            transform: 'scale(1.05)'
+            color: GREEN_ACCENT
           }
         })
       }
@@ -361,8 +340,8 @@ const getDesignTokens = (mode: 'light' | 'dark'): ThemeOptions => ({
     MuiAvatar: {
       styleOverrides: {
         root: ({ theme }) => ({
-          background: `linear-gradient(135deg, ${GREEN_DARK} 0%, ${GREEN_ACCENT} 100%)`,
-          color: '#000',
+          backgroundColor: GREEN_ACCENT,
+          color: '#fff',
           fontWeight: 600
         })
       }
@@ -371,8 +350,9 @@ const getDesignTokens = (mode: 'light' | 'dark'): ThemeOptions => ({
       styleOverrides: {
         root: ({ theme }) => ({
           borderRadius: 8,
+          fontSize: '1rem',
           '& .MuiOutlinedInput-notchedOutline': {
-            borderColor: mode === 'dark' ? 'rgba(0, 255, 136, 0.2)' : 'rgba(0, 0, 0, 0.15)'
+            borderColor: mode === 'dark' ? '#333' : '#ccc'
           },
           '&:hover .MuiOutlinedInput-notchedOutline': {
             borderColor: GREEN_ACCENT
@@ -381,6 +361,52 @@ const getDesignTokens = (mode: 'light' | 'dark'): ThemeOptions => ({
             borderColor: GREEN_ACCENT
           }
         })
+      }
+    },
+    MuiListItemButton: {
+      styleOverrides: {
+        root: ({ theme }) => ({
+          borderRadius: 8,
+          fontSize: '1rem',
+          '&:hover': {
+            backgroundColor: alpha(GREEN_ACCENT, 0.08)
+          },
+          '&.Mui-selected': {
+            backgroundColor: alpha(GREEN_ACCENT, 0.12),
+            '&:hover': {
+              backgroundColor: alpha(GREEN_ACCENT, 0.16)
+            }
+          }
+        })
+      }
+    },
+    MuiDrawer: {
+      styleOverrides: {
+        paper: ({ theme }) => ({
+          borderRight: 'none',
+          boxShadow: mode === 'dark' ? '2px 0 8px rgba(0, 0, 0, 0.5)' : '2px 0 8px rgba(0, 0, 0, 0.1)',
+          background: mode === 'dark' ? '#000000' : '#FFFFFF'
+        })
+      }
+    },
+    MuiListItemText: {
+      styleOverrides: {
+        primary: {
+          fontSize: '1rem'
+        },
+        secondary: {
+          fontSize: '0.9rem'
+        }
+      }
+    },
+    MuiTypography: {
+      styleOverrides: {
+        body1: {
+          fontSize: '1.05rem'
+        },
+        body2: {
+          fontSize: '0.95rem'
+        }
       }
     }
   }

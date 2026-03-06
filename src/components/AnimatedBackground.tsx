@@ -71,7 +71,7 @@ const AnimatedBackground = ({ children }: { children: React.ReactNode }) => {
             width: particle.size,
             height: particle.size,
             borderRadius: '50%',
-            background: 'radial-gradient(circle, #00FF88 0%, transparent 70%)',
+            background: 'radial-gradient(circle, #4CAF50 0%, transparent 70%)',
             filter: 'blur(1px)',
           }}
           animate={{
@@ -98,7 +98,7 @@ const AnimatedBackground = ({ children }: { children: React.ReactNode }) => {
           width: 400,
           height: 400,
           borderRadius: '50%',
-          background: 'radial-gradient(circle, rgba(0, 255, 136, 0.15) 0%, transparent 70%)',
+          background: 'radial-gradient(circle, rgba(76, 175, 80, 0.15) 0%, transparent 70%)',
           filter: 'blur(60px)',
         }}
         animate={{
@@ -142,7 +142,7 @@ const AnimatedBackground = ({ children }: { children: React.ReactNode }) => {
           left: 0,
           right: 0,
           height: '2px',
-          background: 'linear-gradient(90deg, transparent, #00FF88, transparent)',
+          background: 'linear-gradient(90deg, transparent, #4CAF50, transparent)',
           opacity: 0.3,
         }}
         animate={{

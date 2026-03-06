@@ -6,7 +6,7 @@ import {
 import { Lock } from '@mui/icons-material';
 import { adminAPI } from '../services/api';
 
-const ACCENT = '#00FF88';
+const ACCENT = '#2E7D32';
 
 const AdminLogin = () => {
   const [username, setUsername] = useState('');

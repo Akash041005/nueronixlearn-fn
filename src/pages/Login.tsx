@@ -8,7 +8,7 @@ import { Visibility, VisibilityOff, Lock, Email } from '@mui/icons-material';
 import { useAuth } from '../context/AuthContext';
 import SEO from '../components/SEO';
 
-const ACCENT = '#00FF88';
+const ACCENT = '#2E7D32';
 
 const Login = () => {
   const [email, setEmail] = useState('');

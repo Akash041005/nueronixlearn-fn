@@ -9,7 +9,7 @@ import { Search, ArrowForward } from '@mui/icons-material';
 import { coursesAPI } from '../services/api';
 import SEO from '../components/SEO';
 
-const ACCENT = '#00FF88';
+const ACCENT = '#2E7D32';
 const DIFFICULTIES = ['All', 'beginner', 'intermediate', 'advanced'];
 const CATEGORIES = ['All', 'Programming', 'Data Science', 'Web Development', 'Machine Learning', 'Mathematics', 'Science'];
 
@@ -107,7 +107,7 @@ const Courses = () => {
                 <Grid item xs={12} sm={6} md={4} key={course._id}>
                   <Card sx={{
                     height: '100%', display: 'flex', flexDirection: 'column',
-                    '&:hover': { borderColor: alpha(ACCENT, 0.4), boxShadow: `0 0 0 1px ${alpha(ACCENT, 0.15)}` }
+                    '&:hover': { borderColor: alpha(ACCENT, 0.4), boxShadow: 'none' }
                   }}>
                     {/* Minimal thumbnail */}
                     <Box sx={{

@@ -9,7 +9,7 @@ import {
 import { Add, Delete, ArrowBack, Save, ExpandMore, ArrowForward } from "@mui/icons-material";
 import { coursesAPI } from "../services/api";
 
-const ACCENT = '#00FF88';
+const ACCENT = '#2E7D32';
 
 interface Module {
   _id?: string;

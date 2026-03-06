@@ -7,7 +7,7 @@ import {
 import { School, PlayArrow, CheckCircle, ArrowForward } from '@mui/icons-material';
 import { coursesAPI } from '../services/api';
 
-const ACCENT = '#00FF88';
+const ACCENT = '#2E7D32';
 
 const MyCourses = () => {
     const [enrollments, setEnrollments] = useState<any[]>([]);

@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import {
   Box, Container, Typography, Grid, Card, CardContent, Button,
-  CircularProgress, Chip, LinearProgress, Avatar
+  CircularProgress, Chip, LinearProgress, Avatar, useTheme
 } from '@mui/material';
 import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip as RTooltip, ResponsiveContainer
@@ -13,20 +13,19 @@ import {
 } from '@mui/icons-material';
 import { motion, useInView } from 'framer-motion';
 import { useAuth } from '../context/AuthContext';
-import { useTheme as useCustomTheme } from '../context/ThemeContext';
 import { analyticsAPI, mlAPI } from '../services/api';
 import PageBackground from '../components/PageBackground';
 
-const DARK_ACCENT  = '#4fc3f7';
-const LIGHT_ACCENT = '#0288d1';
+const DARK_ACCENT  = '#2E7D32';
+const LIGHT_ACCENT = '#2E7D32';
 
 // ─── Stat card ────────────────────────────────────────────────────────────────
 
 function StatCard({ icon: Icon, label, value, color, delay = 0 }: {
   icon: React.ElementType; label: string; value: string | number; color: string; delay?: number;
 }) {
-  const { mode } = useCustomTheme();
-  const isDark   = mode === 'dark';
+  const theme = useTheme();
+  const isDark = theme.palette.mode === 'dark';
   const ref      = useRef(null);
   const inView   = useInView(ref, { once: true });
 
@@ -38,23 +37,26 @@ function StatCard({ icon: Icon, label, value, color, delay = 0 }: {
       whileHover={{ y: -4, transition: { duration: 0.18 } }}
     >
       <Card sx={{
-        bgcolor: isDark ? '#111' : '#fff',
-        border: `1px solid ${isDark ? '#1a1a1a' : '#ebebeb'}`,
+        bgcolor: 'background.paper',
+        border: `1px solid divider`,
         borderRadius: 3, position: 'relative', overflow: 'hidden',
-        boxShadow: isDark ? 'none' : '0 2px 12px rgba(0,0,0,0.06)',
+        boxShadow: 'none',
+        '&:hover': {
+          boxShadow: isDark ? '0 4px 16px rgba(0,0,0,0.5)' : '0 4px 16px rgba(0,0,0,0.1)',
+        },
         '&::before': { content: '""', position: 'absolute', top: 0, left: 0, right: 0, height: 2, bgcolor: color },
       }}>
         <CardContent sx={{ p: 2.5 }}>
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
-            <Box sx={{ p: 1, borderRadius: 2, bgcolor: `${color}18` }}>
+            <Box sx={{ p: 1, borderRadius: 2, bgcolor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.04)' }}>
               <Icon sx={{ color, fontSize: 20 }} />
             </Box>
-            <TrendingUp sx={{ fontSize: 14, color: isDark ? '#2a2a2a' : '#e0e0e0' }} />
+            <TrendingUp sx={{ fontSize: 14, color: 'text.secondary' }} />
           </Box>
-          <Typography sx={{ fontSize: '2rem', fontWeight: 800, letterSpacing: '-0.03em', color: isDark ? '#fff' : '#111', lineHeight: 1 }}>
+          <Typography sx={{ fontSize: '2rem', fontWeight: 800, letterSpacing: '-0.03em', color: 'text.primary', lineHeight: 1 }}>
             {value}
           </Typography>
-          <Typography variant="caption" sx={{ color: isDark ? '#555' : '#aaa', display: 'block', mt: 0.5 }}>
+          <Typography variant="caption" sx={{ color: 'text.secondary', display: 'block', mt: 0.5 }}>
             {label}
           </Typography>
         </CardContent>
@@ -82,10 +84,11 @@ function FadeIn({ children, delay = 0 }: { children: React.ReactNode; delay?: nu
 // ─── Custom recharts tooltip ──────────────────────────────────────────────────
 
 const CustomTooltip = ({ active, payload, label, accent }: any) => {
+  const theme = useTheme();
   if (!active || !payload?.length) return null;
   return (
-    <Box sx={{ bgcolor: '#111', border: '1px solid #1e1e1e', borderRadius: 2, p: 1.5 }}>
-      <Typography variant="caption" color="#555">{label}</Typography>
+    <Box sx={{ bgcolor: 'background.paper', border: '1px solid', borderColor: 'divider', borderRadius: 2, p: 1.5 }}>
+      <Typography variant="caption" color="text.secondary">{label}</Typography>
       <Typography sx={{ color: accent, fontWeight: 700 }}>{payload[0].value} min</Typography>
     </Box>
   );
@@ -95,8 +98,8 @@ const CustomTooltip = ({ active, payload, label, accent }: any) => {
 
 export default function Dashboard() {
   const { user } = useAuth();
-  const { mode } = useCustomTheme();
-  const isDark   = mode === 'dark';
+  const theme = useTheme();
+  const isDark = theme.palette.mode === 'dark';
   const accent   = isDark ? DARK_ACCENT : LIGHT_ACCENT;
 
   const [data,            setData]            = useState<any>(null);
@@ -140,11 +143,11 @@ export default function Dashboard() {
         minutes: Math.floor(Math.random() * 50 + 10),
       }));
 
-  const cardBg     = isDark ? '#111'    : '#fff';
-  const cardBorder = isDark ? '#1a1a1a' : '#ebebeb';
-  const tp         = isDark ? '#fff'    : '#111';
-  const ts         = isDark ? '#555'    : '#999';
-  const cardShadow = isDark ? 'none'    : '0 2px 12px rgba(0,0,0,0.06)';
+  const cardBg     = 'background.paper';
+  const cardBorder = 'divider';
+  const tp         = 'text.primary';
+  const ts         = 'text.secondary';
+  const cardShadow = 'none';
 
   return (
     <PageBackground variant="dashboard">
@@ -203,9 +206,9 @@ export default function Dashboard() {
                           <stop offset="95%" stopColor={accent} stopOpacity={0}    />
                         </linearGradient>
                       </defs>
-                      <CartesianGrid strokeDasharray="3 3" stroke={isDark ? '#1a1a1a' : '#f0f0f0'} />
-                      <XAxis dataKey="date" tick={{ fill: isDark ? '#444' : '#bbb', fontSize: 11 }} axisLine={false} tickLine={false} />
-                      <YAxis tick={{ fill: isDark ? '#444' : '#bbb', fontSize: 11 }} axisLine={false} tickLine={false} />
+                      <CartesianGrid strokeDasharray="3 3" stroke="divider" />
+                      <XAxis dataKey="date" tick={{ fill: 'text.secondary', fontSize: 11 }} axisLine={false} tickLine={false} />
+                      <YAxis tick={{ fill: 'text.secondary', fontSize: 11 }} axisLine={false} tickLine={false} />
                       <RTooltip content={<CustomTooltip accent={accent} />} cursor={{ stroke: `${accent}44` }} />
                       <Area type="monotone" dataKey="minutes" stroke={accent} strokeWidth={2} fill="url(#ag)"
                         dot={{ fill: accent, strokeWidth: 0, r: 3 }} activeDot={{ r: 5, fill: accent }} />
@@ -228,10 +231,9 @@ export default function Dashboard() {
 
                   {recentActivity.length === 0 ? (
                     <Box sx={{ textAlign: 'center', py: 4 }}>
-                      <BookmarkBorder sx={{ fontSize: 44, color: isDark ? '#222' : '#ddd', mb: 1.5 }} />
+                      <BookmarkBorder sx={{ fontSize: 44, color: 'text.disabled', mb: 1.5 }} />
                       <Typography variant="body2" sx={{ color: ts, mb: 2 }}>No recent activity</Typography>
-                      <Button component={Link} to="/courses" size="small" variant="contained" endIcon={<ArrowForward sx={{ fontSize: 13 }} />}
-                        sx={{ bgcolor: accent, color: '#fff', fontWeight: 700 }}>
+                      <Button component={Link} to="/courses" size="small" variant="contained" endIcon={<ArrowForward sx={{ fontSize: 13 }} />}>
                         Explore courses
                       </Button>
                     </Box>
@@ -250,7 +252,7 @@ export default function Dashboard() {
                           </Typography>
                           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 0.4 }}>
                             <LinearProgress variant="determinate" value={item.progress || 0}
-                              sx={{ flex: 1, height: 3, borderRadius: 2, bgcolor: isDark ? '#1a1a1a' : '#f0f0f0', '& .MuiLinearProgress-bar': { bgcolor: accent } }} />
+                              sx={{ flex: 1, height: 3, borderRadius: 2, bgcolor: 'divider', '& .MuiLinearProgress-bar': { bgcolor: accent } }} />
                             <Typography variant="caption" sx={{ color: ts, minWidth: 28, fontSize: '0.68rem' }}>{item.progress || 0}%</Typography>
                           </Box>
                         </Box>
