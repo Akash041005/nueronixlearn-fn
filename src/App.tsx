@@ -1,6 +1,34 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
-import { Box, CircularProgress } from '@mui/material';
+import { Box, CircularProgress, useTheme, Typography, Button } from '@mui/material';
+import { Component, ErrorInfo, ReactNode } from 'react';
 import { useAuth } from './context/AuthContext';
+
+// ─── Global Error Boundary ────────────────────────────────────────────────────
+
+interface EBState { hasError: boolean; message: string; }
+class ErrorBoundary extends Component<{ children: ReactNode }, EBState> {
+  state: EBState = { hasError: false, message: '' };
+  static getDerivedStateFromError(err: Error): EBState {
+    return { hasError: true, message: err.message };
+  }
+  componentDidCatch(err: Error, info: ErrorInfo) {
+    console.error('[ErrorBoundary]', err, info);
+  }
+  render() {
+    if (this.state.hasError) {
+      return (
+        <Box sx={{ minHeight: '100vh', bgcolor: '#0a0a0a', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 2, p: 4 }}>
+          <Typography variant="h5" color="#e57373" fontWeight={700}>Something went wrong</Typography>
+          <Typography variant="body2" color="#555" sx={{ maxWidth: 480, textAlign: 'center' }}>{this.state.message}</Typography>
+          <Button variant="outlined" sx={{ color: '#4fc3f7', borderColor: '#4fc3f7', mt: 1 }} onClick={() => { this.setState({ hasError: false, message: '' }); window.location.reload(); }}>
+            Reload page
+          </Button>
+        </Box>
+      );
+    }
+    return this.props.children;
+  }
+}
 import Navbar from './components/Navbar';
 import NeuroBot from './components/NeuroBot';
 import Landing from './pages/Landing';
@@ -42,17 +70,18 @@ const ProtectedRoute = ({ children, requireTeacher = false }: { children: React.
 
 function App() {
   const { user, loading } = useAuth();
+  const theme = useTheme();
 
   if (loading) {
     return (
-      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', bgcolor: '#0f172a' }}>
+      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', bgcolor: 'background.default' }}>
         <CircularProgress />
       </Box>
     );
   }
 
   return (
-    <>
+    <ErrorBoundary>
       <Navbar />
       <Routes>
         <Route path="/" element={<Landing />} />
@@ -98,7 +127,7 @@ function App() {
         <Route path="/admin" element={<AdminPanel />} />
       </Routes>
       <NeuroBot />
-    </>
+    </ErrorBoundary>
   );
 }
 

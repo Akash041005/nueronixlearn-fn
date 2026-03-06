@@ -1,287 +1,373 @@
-import { useEffect } from 'react';
-import { Link } from 'react-router-dom';
-import { Box, Container, Typography, Button, Grid, alpha, useTheme } from '@mui/material';
-import { ArrowForward } from '@mui/icons-material';
+import { useEffect, useRef, useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { Box, Container, Typography, Button, Grid } from '@mui/material';
+import { ArrowForward, PlayArrow } from '@mui/icons-material';
+import { motion, useInView, AnimatePresence } from 'framer-motion';
+import { useAuth } from '../context/AuthContext';
+import { useTheme as useCustomTheme } from '../context/ThemeContext';
+import KeyboardBackground from '../components/KeyboardBackground';
 
-const ACCENT = '#00FF88';
+// ─── Theme ────────────────────────────────────────────────────────────────────
+
+const DARK_ACCENT  = '#4fc3f7';
+const LIGHT_ACCENT = '#0288d1';
+
+// ─── Data ─────────────────────────────────────────────────────────────────────
 
 const STATS = [
-  { value: '50K+', label: 'Active learners' },
-  { value: '200+', label: 'Courses' },
-  { value: '95%', label: 'Completion rate' },
-  { value: '4.9★', label: 'Average rating' },
+  { value: 50000, label: 'Active learners', suffix: '+' },
+  { value: 200,   label: 'Subjects covered', suffix: '+' },
+  { value: 95,    label: 'Completion rate',  suffix: '%' },
+  { value: 4.9,   label: 'Average rating',   suffix: '' },
 ];
 
 const FEATURES = [
-  {
-    num: '01',
-    title: 'AI-Powered Personalization',
-    desc: 'Your learning path adapts in real-time based on cognitive load, performance patterns, and personal goals.'
-  },
-  {
-    num: '02',
-    title: 'Adaptive Difficulty',
-    desc: 'Content difficulty shifts automatically — never too easy to be boring, never too hard to overwhelm.'
-  },
-  {
-    num: '03',
-    title: 'Deep Analytics',
-    desc: 'Track every metric that matters: time-on-task, retention rates, weak topics, and streak consistency.'
-  },
+  { num: '01', title: 'AI Roadmap Generation', desc: 'Add any subject and the AI instantly generates a structured learning roadmap with topics, subtopics, videos, and articles.' },
+  { num: '02', title: 'Adaptive Difficulty',   desc: 'Content difficulty shifts automatically based on your performance — never too easy, never overwhelming.' },
+  { num: '03', title: 'Deep Analytics',        desc: 'Track retention rates, time-on-task, streak consistency, and weak topics — all in one dashboard.' },
 ];
 
-const Landing = () => {
-  const theme = useTheme();
-  const isDark = theme.palette.mode === 'dark';
+// ─── Animated counter (pure CSS / requestAnimationFrame, no framer-motion spring) ─
+
+function Counter({ target, suffix }: { target: number; suffix: string }) {
+  const ref     = useRef<HTMLSpanElement>(null);
+  const inView  = useInView(ref, { once: true });
+  const started = useRef(false);
 
   useEffect(() => {
-    const schemaData = {
-      "@context": "https://schema.org",
-      "@type": "EducationWebApp",
-      "name": "NeuronixLearn",
-      "description": "AI-Powered Adaptive Learning Platform that personalizes education based on individual learning patterns",
-      "url": "https://nueronixlearn.com",
-      "applicationCategory": "EducationApplication",
-      "operatingSystem": "Web Browser, iOS, Android",
-      "offers": {
-        "@type": "Offer",
-        "price": "0",
-        "priceCurrency": "USD",
-        "availability": "https://schema.org/InStock"
-      },
-      "aggregateRating": {
-        "@type": "AggregateRating",
-        "ratingValue": "4.9",
-        "reviewCount": "50000"
-      },
-      "author": {
-        "@type": "Organization",
-        "name": "NeuronixLearn"
+    if (!inView || started.current) return;
+    started.current = true;
+
+    const duration = 1200;
+    const start    = performance.now();
+    const isFloat  = target % 1 !== 0;
+
+    const tick = (now: number) => {
+      const t   = Math.min((now - start) / duration, 1);
+      const val = t * target;
+      if (ref.current) {
+        ref.current.textContent = (isFloat ? val.toFixed(1) : Math.round(val).toString()) + suffix;
       }
+      if (t < 1) requestAnimationFrame(tick);
     };
+    requestAnimationFrame(tick);
+  }, [inView, target, suffix]);
 
-    const script = document.createElement('script');
-    script.type = 'application/ld+json';
-    script.textContent = JSON.stringify(schemaData);
-    document.head.appendChild(script);
+  return <span ref={ref}>0{suffix}</span>;
+}
 
-    return () => {
-      document.head.removeChild(script);
-    };
-  }, []);
+// ─── Fade wrappers ────────────────────────────────────────────────────────────
+
+const FadeUp = ({ children, delay = 0 }: { children: React.ReactNode; delay?: number }) => (
+  <motion.div
+    initial={{ opacity: 0, y: 28 }}
+    animate={{ opacity: 1, y: 0 }}
+    transition={{ duration: 0.6, delay, ease: 'easeOut' }}
+  >
+    {children}
+  </motion.div>
+);
+
+function FadeIn({ children, delay = 0 }: { children: React.ReactNode; delay?: number }) {
+  const ref    = useRef(null);
+  const inView = useInView(ref, { once: true, margin: '-80px' });
+  return (
+    <motion.div ref={ref}
+      initial={{ opacity: 0, y: 24 }}
+      animate={inView ? { opacity: 1, y: 0 } : {}}
+      transition={{ duration: 0.55, delay, ease: 'easeOut' }}
+    >
+      {children}
+    </motion.div>
+  );
+}
+
+// ─── Magnetic button ──────────────────────────────────────────────────────────
+
+function MagBtn({
+  children, to, variant = 'contained', endIcon, onClick,
+}: {
+  children: React.ReactNode;
+  to?: string;
+  variant?: 'contained' | 'outlined';
+  endIcon?: React.ReactNode;
+  onClick?: () => void;
+}) {
+  const { mode } = useCustomTheme();
+  const accent   = mode === 'dark' ? DARK_ACCENT : LIGHT_ACCENT;
+
+  const linkProps = to ? { component: Link as any, to } : {};
 
   return (
-    <Box sx={{ bgcolor: 'background.default', minHeight: '100vh' }}>
+    <motion.div
+      whileHover={{ scale: 1.05, y: -2 }}
+      whileTap={{ scale: 0.97 }}
+      style={{ display: 'inline-block' }}
+    >
+      <Button
+        {...linkProps}
+        variant={variant}
+        size="large"
+        endIcon={endIcon}
+        onClick={onClick}
+        sx={{
+          px: 3.5, py: 1.3, fontSize: '0.9rem', fontWeight: 700, borderRadius: '10px',
+          transition: 'box-shadow 0.2s, background-color 0.2s',
+          ...(variant === 'contained' ? {
+            bgcolor: accent, color: '#fff',
+            '&:hover': { bgcolor: mode === 'dark' ? '#29b6f6' : '#01579b', boxShadow: `0 0 28px 4px ${accent}44` },
+          } : {
+            borderColor: `${accent}66`, color: accent,
+            '&:hover': { borderColor: accent, bgcolor: `${accent}0d`, boxShadow: `0 0 18px 2px ${accent}22` },
+          }),
+        }}
+      >
+        {children}
+      </Button>
+    </motion.div>
+  );
+}
 
-      {/* ── Hero ── */}
-      <Box sx={{
-        position: 'relative',
-        overflow: 'hidden',
-        pt: { xs: 10, md: 16 },
-        pb: { xs: 8, md: 14 },
-        '&::before': {
-          content: '""',
-          position: 'absolute',
-          inset: 0,
-          backgroundImage: isDark
-            ? `radial-gradient(ellipse 80% 60% at 50% -10%, ${alpha(ACCENT, 0.18)} 0%, transparent 70%)`
-            : `radial-gradient(ellipse 80% 60% at 50% -10%, ${alpha(ACCENT, 0.1)} 0%, transparent 70%)`,
-          pointerEvents: 'none'
-        }
-      }}>
-        {/* Grid lines overlay */}
+// ─── Main ─────────────────────────────────────────────────────────────────────
+
+export default function Landing() {
+  const { user }  = useAuth();
+  const navigate  = useNavigate();
+  const { mode }  = useCustomTheme();
+  const isDark    = mode === 'dark';
+  const accent    = isDark ? DARK_ACCENT : LIGHT_ACCENT;
+  const bgColor   = isDark ? '#0a0a0a'   : '#ffffff';
+  const textPri   = isDark ? '#fff'      : '#111';
+  const textSec   = isDark ? '#777'      : '#888';
+  const borderCol = isDark ? '#1a1a1a'   : '#ebebeb';
+
+  return (
+    <Box sx={{ bgcolor: bgColor, color: textPri, minHeight: '100vh', overflowX: 'hidden' }}>
+
+      {/* ── HERO ── */}
+      <Box sx={{ position: 'relative', minHeight: '100vh', display: 'flex', alignItems: 'center', overflow: 'hidden' }}>
+
+        {/* Keyboard canvas background */}
+        <KeyboardBackground opacity={isDark ? 0.5 : 0.25} />
+
+        {/* Gradient overlay */}
         <Box sx={{
-          position: 'absolute', inset: 0, pointerEvents: 'none',
-          backgroundImage: isDark
-            ? `linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
-               linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px)`
-            : `linear-gradient(rgba(0,0,0,0.03) 1px, transparent 1px),
-               linear-gradient(90deg, rgba(0,0,0,0.03) 1px, transparent 1px)`,
-          backgroundSize: '60px 60px'
+          position: 'absolute', inset: 0, zIndex: 1, pointerEvents: 'none',
+          background: isDark
+            ? 'radial-gradient(ellipse 90% 70% at 50% 40%, rgba(10,10,10,0.55) 0%, rgba(10,10,10,0.94) 80%)'
+            : 'radial-gradient(ellipse 90% 70% at 50% 40%, rgba(255,255,255,0.4) 0%, rgba(255,255,255,0.96) 75%)',
         }} />
 
-        <Container maxWidth="lg" sx={{ position: 'relative' }}>
+        {/* Accent glow */}
+        <Box sx={{
+          position: 'absolute', top: '-5%', left: '50%', transform: 'translateX(-50%)',
+          width: 600, height: 350, zIndex: 1, pointerEvents: 'none',
+          background: `radial-gradient(ellipse, ${accent}14 0%, transparent 70%)`,
+        }} />
+
+        <Container maxWidth="lg" sx={{ position: 'relative', zIndex: 2, pt: { xs: 12, md: 0 } }}>
+
           {/* Badge */}
-          <Box sx={{
-            display: 'inline-flex', alignItems: 'center', gap: 1,
-            px: 1.5, py: 0.5, mb: 5,
-            border: `1px solid ${alpha(ACCENT, 0.35)}`,
-            borderRadius: '20px',
-            bgcolor: alpha(ACCENT, 0.08)
-          }}>
-            <Box sx={{ width: 6, height: 6, borderRadius: '50%', bgcolor: ACCENT }} />
-            <Typography sx={{ fontSize: '0.72rem', fontWeight: 600, letterSpacing: '0.08em', color: ACCENT, textTransform: 'uppercase' }}>
-              AI-Powered Learning Platform
-            </Typography>
-          </Box>
+          <FadeUp delay={0.05}>
+            <Box sx={{
+              display: 'inline-flex', alignItems: 'center', gap: 1,
+              px: 1.5, py: 0.5, mb: 4,
+              border: `1px solid ${accent}44`, borderRadius: '20px', bgcolor: `${accent}0d`,
+            }}>
+              <Box sx={{ width: 6, height: 6, borderRadius: '50%', bgcolor: accent, boxShadow: `0 0 8px ${accent}` }} />
+              <Typography sx={{ fontSize: '0.7rem', fontWeight: 700, letterSpacing: '0.1em', color: accent, textTransform: 'uppercase' }}>
+                AI-Powered Learning Platform
+              </Typography>
+            </Box>
+          </FadeUp>
 
           {/* Headline */}
-          <Typography variant="h1" sx={{
-            fontSize: { xs: '2.8rem', sm: '4rem', md: '5.5rem' },
-            fontWeight: 700,
-            lineHeight: 1.05,
-            letterSpacing: '-0.03em',
-            maxWidth: 800,
-            mb: 3,
-            color: 'text.primary'
-          }}>
-            Learn smarter.<br />
-            <Box component="span" sx={{ color: ACCENT }}>Not harder.</Box>
-          </Typography>
-
-          <Typography sx={{
-            fontSize: { xs: '1rem', md: '1.15rem' },
-            color: 'text.secondary',
-            maxWidth: 520,
-            lineHeight: 1.7,
-            mb: 5
-          }}>
-            NeuronixLearn adapts to how your brain actually works — serving the right content at the right difficulty, at exactly the right moment.
-          </Typography>
-
-          <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap', mb: { xs: 8, md: 12 } }}>
-            <Button
-              component={Link} to="/register"
-              variant="contained"
-              size="large"
-              endIcon={<ArrowForward />}
-              sx={{ px: 3, py: 1.25, fontSize: '0.9rem' }}
-            >
-              Start for free
-            </Button>
-            <Button
-              component={Link} to="/courses"
-              variant="outlined"
-              size="large"
-              sx={{ px: 3, py: 1.25, fontSize: '0.9rem' }}
-            >
-              Browse courses
-            </Button>
-          </Box>
-
-          {/* Stats row */}
-          <Box sx={{
-            display: 'flex', gap: { xs: 4, md: 8 },
-            flexWrap: 'wrap',
-            pt: 5,
-            borderTop: `1px solid ${theme.palette.divider}`
-          }}>
-            {STATS.map((s) => (
-              <Box key={s.label}>
-                <Typography sx={{
-                  fontFamily: '"Space Grotesk", sans-serif',
-                  fontSize: { xs: '1.6rem', md: '2rem' },
-                  fontWeight: 700,
-                  letterSpacing: '-0.02em',
-                  color: 'text.primary'
-                }}>
-                  {s.value}
-                </Typography>
-                <Typography sx={{ fontSize: '0.8rem', color: 'text.secondary', mt: 0.25 }}>
-                  {s.label}
-                </Typography>
+          <FadeUp delay={0.15}>
+            <Typography component="h1" sx={{
+              fontSize: { xs: '3rem', sm: '4.5rem', md: '6rem' },
+              fontWeight: 800, lineHeight: 1.02, letterSpacing: '-0.04em', mb: 3,
+            }}>
+              Learn smarter.{' '}
+              <Box component="span" sx={{ color: accent, textShadow: `0 0 40px ${accent}66` }}>
+                Not harder.
               </Box>
-            ))}
-          </Box>
+            </Typography>
+          </FadeUp>
+
+          <FadeUp delay={0.28}>
+            <Typography sx={{ fontSize: { xs: '1rem', md: '1.2rem' }, color: textSec, maxWidth: 520, lineHeight: 1.75, mb: 5 }}>
+              NeuronixLearn generates a personalised AI roadmap for any subject —
+              with topics, subtopics, videos, and articles, all in one place.
+            </Typography>
+          </FadeUp>
+
+          <FadeUp delay={0.4}>
+            <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap', mb: { xs: 8, md: 12 } }}>
+              {!user ? (
+                <>
+                  <MagBtn to="/register" endIcon={<ArrowForward />}>Start for free</MagBtn>
+                  <MagBtn to="/login" variant="outlined">Log in</MagBtn>
+                </>
+              ) : (
+                <>
+                  <MagBtn onClick={() => navigate(user.role === 'teacher' ? '/teacher' : '/dashboard')} endIcon={<ArrowForward />}>
+                    Dashboard
+                  </MagBtn>
+                  <MagBtn to="/study-plan" variant="outlined" endIcon={<PlayArrow />}>
+                    Study Plan
+                  </MagBtn>
+                </>
+              )}
+            </Box>
+          </FadeUp>
+
+          {/* Stats */}
+          <FadeUp delay={0.55}>
+            <Box sx={{ display: 'flex', gap: { xs: 4, md: 8 }, flexWrap: 'wrap', pt: 5, borderTop: `1px solid ${borderCol}` }}>
+              {STATS.map((s) => (
+                <Box key={s.label}>
+                  <Typography sx={{ fontSize: { xs: '1.8rem', md: '2.3rem' }, fontWeight: 800, letterSpacing: '-0.03em', color: textPri }}>
+                    <Counter target={s.value} suffix={s.suffix} />
+                  </Typography>
+                  <Typography sx={{ fontSize: '0.78rem', color: textSec, mt: 0.25 }}>{s.label}</Typography>
+                </Box>
+              ))}
+            </Box>
+          </FadeUp>
         </Container>
       </Box>
 
-      {/* ── Features ── */}
-      <Box sx={{
-        borderTop: `1px solid ${theme.palette.divider}`,
-        borderBottom: `1px solid ${theme.palette.divider}`,
-        py: { xs: 8, md: 14 }
-      }}>
+      {/* ── FEATURES ── */}
+      <Box sx={{ borderTop: `1px solid ${borderCol}`, borderBottom: `1px solid ${borderCol}`, py: { xs: 8, md: 14 } }}>
         <Container maxWidth="lg">
-          <Box sx={{ mb: 8, maxWidth: 520 }}>
-            <Typography variant="overline" sx={{ color: ACCENT, mb: 1, display: 'block' }}>
-              Why NeuronixLearn
-            </Typography>
-            <Typography variant="h2" sx={{ fontSize: { xs: '2rem', md: '2.8rem' }, mb: 2 }}>
-              Built around how you learn
-            </Typography>
-            <Typography color="text.secondary" sx={{ lineHeight: 1.75 }}>
-              Most platforms deliver content. We deliver understanding — through a system that reads your progress and adjusts automatically.
-            </Typography>
-          </Box>
+          <FadeIn>
+            <Box sx={{ mb: 8, maxWidth: 520 }}>
+              <Typography sx={{ color: accent, fontSize: '0.7rem', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', mb: 1 }}>
+                Why NeuronixLearn
+              </Typography>
+              <Typography variant="h2" sx={{ fontSize: { xs: '2rem', md: '2.8rem' }, fontWeight: 700, letterSpacing: '-0.03em', mb: 2 }}>
+                Built around how you learn
+              </Typography>
+              <Typography sx={{ color: textSec, lineHeight: 1.8, fontSize: '0.95rem' }}>
+                Most platforms deliver content. We deliver understanding — through a system that reads your progress and adjusts automatically.
+              </Typography>
+            </Box>
+          </FadeIn>
 
-          <Box>
-            {FEATURES.map((f, i) => (
-              <Box
-                key={f.num}
-                sx={{
-                  display: 'flex', gap: { xs: 3, md: 6 },
-                  py: { xs: 4, md: 5 },
-                  borderTop: i === 0 ? `1px solid ${theme.palette.divider}` : 'none',
-                  borderBottom: `1px solid ${theme.palette.divider}`,
-                  alignItems: 'flex-start',
-                  '&:hover .feature-num': { color: ACCENT },
-                  transition: 'all 0.15s ease'
-                }}
-              >
-                <Typography
-                  className="feature-num"
-                  sx={{
-                    fontFamily: '"Space Grotesk", sans-serif',
-                    fontSize: { xs: '1rem', md: '1.1rem' },
-                    fontWeight: 700,
-                    color: 'text.secondary',
-                    letterSpacing: '-0.01em',
-                    minWidth: 32,
-                    pt: 0.25,
-                    transition: 'color 0.15s ease'
-                  }}
-                >
-                  {f.num}
-                </Typography>
-                <Box sx={{ flex: 1 }}>
-                  <Typography variant="h5" sx={{ mb: 1.5, fontWeight: 600 }}>{f.title}</Typography>
-                  <Typography color="text.secondary" sx={{ lineHeight: 1.7, maxWidth: 600 }}>{f.desc}</Typography>
+          {FEATURES.map((f, i) => (
+            <FadeIn key={f.num} delay={i * 0.08}>
+              <motion.div whileHover={{ x: 6 }} transition={{ type: 'spring', stiffness: 300, damping: 22 }}>
+                <Box sx={{
+                  display: 'flex', gap: { xs: 3, md: 6 }, py: { xs: 4, md: 5 },
+                  borderBottom: `1px solid ${borderCol}`,
+                  ...(i === 0 ? { borderTop: `1px solid ${borderCol}` } : {}),
+                  alignItems: 'flex-start', cursor: 'default',
+                  '&:hover .fnum': { color: accent },
+                  '&:hover .farrow': { opacity: 1, transform: 'translateX(4px)' },
+                  transition: 'all 0.2s',
+                }}>
+                  <Typography className="fnum" sx={{ fontSize: '0.95rem', fontWeight: 700, color: isDark ? '#333' : '#ccc', minWidth: 32, pt: 0.25, transition: 'color 0.2s' }}>
+                    {f.num}
+                  </Typography>
+                  <Box sx={{ flex: 1 }}>
+                    <Typography variant="h5" sx={{ mb: 1.5, fontWeight: 600, fontSize: { xs: '1.1rem', md: '1.25rem' } }}>
+                      {f.title}
+                    </Typography>
+                    <Typography sx={{ color: textSec, lineHeight: 1.75, maxWidth: 600, fontSize: '0.95rem' }}>
+                      {f.desc}
+                    </Typography>
+                  </Box>
+                  <ArrowForward className="farrow" sx={{
+                    fontSize: 18, color: accent, mt: 0.75, flexShrink: 0,
+                    display: { xs: 'none', md: 'block' },
+                    opacity: 0, transition: 'opacity 0.2s, transform 0.2s',
+                  }} />
                 </Box>
-                <ArrowForward sx={{
-                  fontSize: 18, color: 'text.secondary', mt: 0.75,
-                  display: { xs: 'none', md: 'block' },
-                  flexShrink: 0
-                }} />
-              </Box>
+              </motion.div>
+            </FadeIn>
+          ))}
+        </Container>
+      </Box>
+
+      {/* ── HOW IT WORKS ── */}
+      <Box sx={{ py: { xs: 8, md: 14 }, bgcolor: isDark ? '#080808' : '#f8f8f8' }}>
+        <Container maxWidth="lg">
+          <FadeIn>
+            <Typography sx={{ color: accent, fontSize: '0.7rem', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', mb: 1 }}>
+              The flow
+            </Typography>
+            <Typography variant="h2" sx={{ fontSize: { xs: '2rem', md: '2.8rem' }, fontWeight: 700, letterSpacing: '-0.03em', mb: 8 }}>
+              From subject to mastery
+            </Typography>
+          </FadeIn>
+          <Grid container spacing={3}>
+            {[
+              { step: '1', title: 'Add a subject',    desc: 'Type any subject. The AI generates a full roadmap from basics to advanced.' },
+              { step: '2', title: 'Topics appear',    desc: 'A structured list of topics in learning order, saved to your progress tracker.' },
+              { step: '3', title: 'Click a subtopic', desc: 'Instantly loads curated YouTube videos and blog articles for that exact concept.' },
+              { step: '4', title: 'Track progress',   desc: 'Mark topics complete. Watch your progress bar fill as you master the subject.' },
+            ].map((item, i) => (
+              <Grid item xs={12} sm={6} md={3} key={item.step}>
+                <FadeIn delay={i * 0.09}>
+                  <motion.div
+                    whileHover={{ y: -6 }}
+                    transition={{ type: 'spring', stiffness: 280, damping: 18 }}
+                    style={{ height: '100%' }}
+                  >
+                    <Box sx={{
+                      p: 3, borderRadius: 3, height: '100%',
+                      bgcolor: isDark ? '#111' : '#fff',
+                      border: `1px solid ${borderCol}`,
+                      transition: 'border-color 0.2s, box-shadow 0.2s',
+                      '&:hover': { borderColor: `${accent}55`, boxShadow: `0 16px 40px ${accent}12` },
+                    }}>
+                      <Typography sx={{ fontSize: '2.5rem', fontWeight: 900, color: isDark ? '#1e1e1e' : '#ebebeb', letterSpacing: '-0.04em', mb: 2, lineHeight: 1 }}>
+                        {item.step.padStart(2, '0')}
+                      </Typography>
+                      <Typography sx={{ fontWeight: 700, mb: 1, fontSize: '1rem' }}>{item.title}</Typography>
+                      <Typography sx={{ color: textSec, fontSize: '0.875rem', lineHeight: 1.7 }}>{item.desc}</Typography>
+                    </Box>
+                  </motion.div>
+                </FadeIn>
+              </Grid>
             ))}
-          </Box>
+          </Grid>
         </Container>
       </Box>
 
       {/* ── CTA ── */}
-      <Box sx={{ py: { xs: 10, md: 16 } }}>
-        <Container maxWidth="md" sx={{ textAlign: 'center' }}>
-          <Typography variant="h2" sx={{
-            fontSize: { xs: '2rem', md: '3rem' },
-            fontWeight: 700,
-            letterSpacing: '-0.025em',
-            mb: 3
-          }}>
-            Ready to learn differently?
-          </Typography>
-          <Typography color="text.secondary" sx={{ mb: 5, fontSize: '1.05rem' }}>
-            Join thousands of students and teachers already using NeuronixLearn.
-          </Typography>
-          <Box sx={{ display: 'flex', justifyContent: 'center', gap: 2 }}>
-            <Button
-              component={Link} to="/register"
-              variant="contained"
-              size="large"
-              endIcon={<ArrowForward />}
-              sx={{ px: 4, py: 1.25 }}
-            >
-              Create free account
-            </Button>
-            <Button component={Link} to="/login" variant="outlined" size="large" sx={{ px: 3, py: 1.25 }}>
-              Log in
-            </Button>
-          </Box>
+      <Box sx={{ py: { xs: 10, md: 18 }, textAlign: 'center' }}>
+        <Container maxWidth="md">
+          <FadeIn>
+            <Typography variant="h2" sx={{ fontSize: { xs: '2.2rem', md: '3.5rem' }, fontWeight: 800, letterSpacing: '-0.03em', mb: 2 }}>
+              Ready to learn differently?
+            </Typography>
+            <Typography sx={{ color: textSec, mb: 6, fontSize: '1.05rem', lineHeight: 1.75 }}>
+              Join thousands of students already using NeuronixLearn to master any subject faster.
+            </Typography>
+            <Box sx={{ display: 'flex', justifyContent: 'center', gap: 2, flexWrap: 'wrap' }}>
+              {!user ? (
+                <>
+                  <MagBtn to="/register" endIcon={<ArrowForward />}>Create free account</MagBtn>
+                  <MagBtn to="/login" variant="outlined">Log in</MagBtn>
+                </>
+              ) : (
+                <MagBtn to="/study-plan" endIcon={<ArrowForward />}>Open Study Plan</MagBtn>
+              )}
+            </Box>
+          </FadeIn>
         </Container>
       </Box>
 
+      {/* Footer */}
+      <Box sx={{ borderTop: `1px solid ${borderCol}`, py: 4 }}>
+        <Container maxWidth="lg">
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 2 }}>
+            <Typography sx={{ fontWeight: 700, color: isDark ? '#333' : '#ccc', fontSize: '0.85rem' }}>NeuronixLearn</Typography>
+            <Typography sx={{ color: isDark ? '#333' : '#ccc', fontSize: '0.78rem' }}>AI-Powered Adaptive Learning</Typography>
+          </Box>
+        </Container>
+      </Box>
     </Box>
   );
-};
-
-export default Landing;
+}

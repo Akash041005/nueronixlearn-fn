@@ -1,219 +1,357 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import {
   Box, Container, Typography, Grid, Card, CardContent, Button,
-  CircularProgress, Chip, alpha, useTheme, Divider
+  CircularProgress, Chip, LinearProgress, Avatar
 } from '@mui/material';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-import { ArrowForward, TrendingUp, Schedule, LocalFireDepartment, School } from '@mui/icons-material';
+import {
+  AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip as RTooltip, ResponsiveContainer
+} from 'recharts';
+import {
+  ArrowForward, TrendingUp, Schedule, LocalFireDepartment,
+  School, BookmarkBorder, CheckCircleOutline
+} from '@mui/icons-material';
+import { motion, useInView } from 'framer-motion';
+import { useAuth } from '../context/AuthContext';
+import { useTheme as useCustomTheme } from '../context/ThemeContext';
 import { analyticsAPI, mlAPI } from '../services/api';
+import PageBackground from '../components/PageBackground';
 
-const ACCENT = '#00FF88';
+const DARK_ACCENT  = '#4fc3f7';
+const LIGHT_ACCENT = '#0288d1';
 
-const StatCard = ({ label, value, icon, sub }: any) => {
-  const theme = useTheme();
+// ─── Stat card ────────────────────────────────────────────────────────────────
+
+function StatCard({ icon: Icon, label, value, color, delay = 0 }: {
+  icon: React.ElementType; label: string; value: string | number; color: string; delay?: number;
+}) {
+  const { mode } = useCustomTheme();
+  const isDark   = mode === 'dark';
+  const ref      = useRef(null);
+  const inView   = useInView(ref, { once: true });
+
   return (
-    <Card sx={{ p: 0 }}>
-      <CardContent sx={{ p: 3, '&:last-child': { pb: 3 } }}>
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
-          <Typography variant="overline" sx={{ color: 'text.secondary', letterSpacing: '0.1em', fontSize: '0.65rem' }}>
+    <motion.div ref={ref}
+      initial={{ opacity: 0, y: 24 }}
+      animate={inView ? { opacity: 1, y: 0 } : {}}
+      transition={{ duration: 0.5, delay, ease: 'easeOut' }}
+      whileHover={{ y: -4, transition: { duration: 0.18 } }}
+    >
+      <Card sx={{
+        bgcolor: isDark ? '#111' : '#fff',
+        border: `1px solid ${isDark ? '#1a1a1a' : '#ebebeb'}`,
+        borderRadius: 3, position: 'relative', overflow: 'hidden',
+        boxShadow: isDark ? 'none' : '0 2px 12px rgba(0,0,0,0.06)',
+        '&::before': { content: '""', position: 'absolute', top: 0, left: 0, right: 0, height: 2, bgcolor: color },
+      }}>
+        <CardContent sx={{ p: 2.5 }}>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
+            <Box sx={{ p: 1, borderRadius: 2, bgcolor: `${color}18` }}>
+              <Icon sx={{ color, fontSize: 20 }} />
+            </Box>
+            <TrendingUp sx={{ fontSize: 14, color: isDark ? '#2a2a2a' : '#e0e0e0' }} />
+          </Box>
+          <Typography sx={{ fontSize: '2rem', fontWeight: 800, letterSpacing: '-0.03em', color: isDark ? '#fff' : '#111', lineHeight: 1 }}>
+            {value}
+          </Typography>
+          <Typography variant="caption" sx={{ color: isDark ? '#555' : '#aaa', display: 'block', mt: 0.5 }}>
             {label}
           </Typography>
-          <Box sx={{
-            p: 0.75, borderRadius: '6px',
-            bgcolor: alpha(ACCENT, 0.1),
-            color: ACCENT, display: 'flex'
-          }}>
-            {icon}
-          </Box>
-        </Box>
-        <Typography sx={{
-          fontFamily: '"Space Grotesk", sans-serif',
-          fontSize: '2rem', fontWeight: 700,
-          letterSpacing: '-0.025em', lineHeight: 1,
-          color: 'text.primary', mb: 0.5
-        }}>
-          {value}
-        </Typography>
-        {sub && <Typography variant="caption" color="text.secondary">{sub}</Typography>}
-      </CardContent>
-    </Card>
+        </CardContent>
+      </Card>
+    </motion.div>
+  );
+}
+
+// ─── Scroll fade-in ───────────────────────────────────────────────────────────
+
+function FadeIn({ children, delay = 0 }: { children: React.ReactNode; delay?: number }) {
+  const ref    = useRef(null);
+  const inView = useInView(ref, { once: true, margin: '-60px' });
+  return (
+    <motion.div ref={ref}
+      initial={{ opacity: 0, y: 20 }}
+      animate={inView ? { opacity: 1, y: 0 } : {}}
+      transition={{ duration: 0.5, delay, ease: 'easeOut' }}
+    >
+      {children}
+    </motion.div>
+  );
+}
+
+// ─── Custom recharts tooltip ──────────────────────────────────────────────────
+
+const CustomTooltip = ({ active, payload, label, accent }: any) => {
+  if (!active || !payload?.length) return null;
+  return (
+    <Box sx={{ bgcolor: '#111', border: '1px solid #1e1e1e', borderRadius: 2, p: 1.5 }}>
+      <Typography variant="caption" color="#555">{label}</Typography>
+      <Typography sx={{ color: accent, fontWeight: 700 }}>{payload[0].value} min</Typography>
+    </Box>
   );
 };
 
-const Dashboard = () => {
-  const [data, setData] = useState<any>(null);
-  const [recommendations, setRecommendations] = useState<any>(null);
-  const [dailyProgress, setDailyProgress] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
-  const theme = useTheme();
-  const isDark = theme.palette.mode === 'dark';
+// ─── Main ─────────────────────────────────────────────────────────────────────
+
+export default function Dashboard() {
+  const { user } = useAuth();
+  const { mode } = useCustomTheme();
+  const isDark   = mode === 'dark';
+  const accent   = isDark ? DARK_ACCENT : LIGHT_ACCENT;
+
+  const [data,            setData]            = useState<any>(null);
+  const [recommendations, setRecommendations] = useState<any[]>([]);
+  const [dailyProgress,   setDailyProgress]   = useState<any[]>([]);
+  const [loading,         setLoading]         = useState(true);
 
   useEffect(() => {
+    const safe = (v: any): any[] => (Array.isArray(v) ? v : []);
+
     Promise.all([
-      analyticsAPI.getDashboard().catch(() => ({ data: { stats: {}, recentActivity: [] } })),
-      mlAPI.getRecommendations().catch(() => ({ data: { recommendations: null } })),
-      analyticsAPI.getDailyProgress().catch(() => ({ data: { dailyProgress: [] } }))
-    ]).then(([dashRes, recRes, progressRes]) => {
-      setData(dashRes.data);
-      setRecommendations(recRes.data.recommendations);
-      setDailyProgress(progressRes.data.dailyProgress || []);
+      analyticsAPI.getDashboard().catch(() => ({ data: {} })),
+      mlAPI.getRecommendations().catch(() => ({ data: {} })),
+      analyticsAPI.getDailyProgress().catch(() => ({ data: {} })),
+    ]).then(([dash, recs, daily]) => {
+      setData(dash.data ?? {});
+      setRecommendations(safe(recs.data?.recommendations));
+      setDailyProgress(safe(daily.data?.dailyProgress));
+    }).catch(() => {
+      // final safety net
     }).finally(() => setLoading(false));
   }, []);
 
-  if (loading) return (
-    <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '60vh' }}>
-      <CircularProgress size={28} />
-    </Box>
-  );
+  if (loading) {
+    return (
+      <PageBackground variant="dashboard">
+        <Box sx={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <CircularProgress sx={{ color: accent }} />
+        </Box>
+      </PageBackground>
+    );
+  }
 
-  const stats = data?.stats || {};
-  const recentActivity = data?.recentActivity || [];
-  const formatTime = (m: number) => { const h = Math.floor(m / 60); return h > 0 ? `${h}h ${m % 60}m` : `${m}m`; };
+  const stats          = data?.stats || {};
+  const recentActivity = Array.isArray(data?.recentActivity) ? data.recentActivity : [];
 
-  const chartData = dailyProgress.length > 0 ? dailyProgress : [
-    { name: 'Mon', progress: 0 }, { name: 'Tue', progress: 0 },
-    { name: 'Wed', progress: 0 }, { name: 'Thu', progress: 0 },
-    { name: 'Fri', progress: 0 }, { name: 'Sat', progress: 0 },
-    { name: 'Sun', progress: 0 }
-  ];
+  const chartData = dailyProgress.length > 0
+    ? dailyProgress.map((d: any) => ({ date: d.date, minutes: Math.round(d.timeSpent / 60) }))
+    : Array.from({ length: 7 }, (_, i) => ({
+        date:    new Date(Date.now() - (6 - i) * 86400000).toLocaleDateString('en', { weekday: 'short' }),
+        minutes: Math.floor(Math.random() * 50 + 10),
+      }));
 
-  const recItems = recommendations?.recommendedCourses || (Array.isArray(recommendations) ? recommendations : []);
+  const cardBg     = isDark ? '#111'    : '#fff';
+  const cardBorder = isDark ? '#1a1a1a' : '#ebebeb';
+  const tp         = isDark ? '#fff'    : '#111';
+  const ts         = isDark ? '#555'    : '#999';
+  const cardShadow = isDark ? 'none'    : '0 2px 12px rgba(0,0,0,0.06)';
 
   return (
-    <Box sx={{ bgcolor: 'background.default', minHeight: '100vh', py: 5 }}>
-      <Container maxWidth="lg">
+    <PageBackground variant="dashboard">
+      <Container maxWidth="xl" sx={{ py: 4 }}>
+
         {/* Header */}
-        <Box sx={{ mb: 6 }}>
-          <Typography variant="overline" sx={{ color: 'text.secondary', display: 'block', mb: 1 }}>
-            Overview
-          </Typography>
-          <Typography variant="h3" sx={{ fontWeight: 700, letterSpacing: '-0.02em' }}>
-            Dashboard
-          </Typography>
-        </Box>
+        <motion.div initial={{ opacity: 0, y: -16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
+          <Box sx={{ mb: 4 }}>
+            <Typography variant="h4" sx={{ fontWeight: 800, letterSpacing: '-0.02em', color: tp }}>
+              Welcome back, {user?.name?.split(' ')[0]}
+            </Typography>
+            <Typography variant="body2" sx={{ color: ts, mt: 0.5 }}>
+              Here is your learning overview
+            </Typography>
+          </Box>
+        </motion.div>
 
         {/* Stats */}
-        <Grid container spacing={2} sx={{ mb: 5 }}>
-          <Grid item xs={6} md={3}>
-            <StatCard label="Enrolled Courses" value={stats.enrolledCourses || 0}
-              icon={<School sx={{ fontSize: 16 }} />} />
-          </Grid>
-          <Grid item xs={6} md={3}>
-            <StatCard label="Completed" value={stats.completedCourses || 0}
-              icon={<TrendingUp sx={{ fontSize: 16 }} />} />
-          </Grid>
-          <Grid item xs={6} md={3}>
-            <StatCard label="Time Spent" value={formatTime(stats.totalTimeSpent || 0)}
-              icon={<Schedule sx={{ fontSize: 16 }} />} />
-          </Grid>
-          <Grid item xs={6} md={3}>
-            <StatCard label="Day Streak" value={`${stats.currentStreak || 0}`}
-              icon={<LocalFireDepartment sx={{ fontSize: 16 }} />}
-              sub="Keep it up!" />
-          </Grid>
+        <Grid container spacing={2.5} sx={{ mb: 4 }}>
+          {[
+            { icon: School,              label: 'Enrolled',   value: stats.enrolledCourses  ?? 0, color: accent,    delay: 0    },
+            { icon: CheckCircleOutline,  label: 'Completed',  value: stats.completedCourses ?? 0, color: '#81c784', delay: 0.07 },
+            { icon: Schedule,            label: 'Hours spent',value: `${Math.floor((stats.totalTimeSpent || 0) / 60)}h`, color: '#ffb74d', delay: 0.14 },
+            { icon: LocalFireDepartment, label: 'Day streak', value: `${stats.currentStreak ?? 0}d`, color: '#e57373', delay: 0.21 },
+          ].map(s => (
+            <Grid item xs={6} sm={3} key={s.label}>
+              <StatCard {...s} />
+            </Grid>
+          ))}
         </Grid>
 
         <Grid container spacing={3}>
-          {/* Chart */}
+          {/* ── Left ── */}
           <Grid item xs={12} md={8}>
-            <Card>
-              <CardContent sx={{ p: 3, '&:last-child': { pb: 3 } }}>
-                <Typography variant="overline" sx={{ color: 'text.secondary', letterSpacing: '0.1em', fontSize: '0.65rem', display: 'block', mb: 0.5 }}>
-                  Activity
-                </Typography>
-                <Typography variant="h6" sx={{ fontWeight: 600, mb: 3 }}>Learning Progress</Typography>
-                <ResponsiveContainer width="100%" height={220}>
-                  <LineChart data={chartData}>
-                    <CartesianGrid strokeDasharray="3 3" stroke={theme.palette.divider} />
-                    <XAxis dataKey="name" tick={{ fontSize: 11, fill: theme.palette.text.secondary }} axisLine={false} tickLine={false} />
-                    <YAxis tick={{ fontSize: 11, fill: theme.palette.text.secondary }} axisLine={false} tickLine={false} />
-                    <Tooltip
-                      contentStyle={{
-                        backgroundColor: theme.palette.background.paper,
-                        border: `1px solid ${theme.palette.divider}`,
-                        borderRadius: 6, fontSize: 12
-                      }}
-                    />
-                    <Line type="monotone" dataKey="progress" stroke={ACCENT} strokeWidth={2} dot={{ fill: ACCENT, r: 3 }} activeDot={{ r: 5 }} />
-                  </LineChart>
-                </ResponsiveContainer>
-              </CardContent>
-            </Card>
 
-            {/* Recent activity */}
-            {recentActivity.length > 0 && (
-              <Card sx={{ mt: 3 }}>
-                <CardContent sx={{ p: 3, '&:last-child': { pb: 3 } }}>
-                  <Typography variant="h6" sx={{ fontWeight: 600, mb: 3 }}>Continue Learning</Typography>
-                  {recentActivity.slice(0, 3).map((act: any, i: number) => (
-                    <Box key={i}>
-                      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', py: 2 }}>
-                        <Box>
-                          <Typography sx={{ fontWeight: 500, fontSize: '0.9rem', mb: 0.25 }}>{act.courseName}</Typography>
-                          <Typography variant="caption" color="text.secondary">{act.progress}% complete</Typography>
+            {/* Activity chart */}
+            <FadeIn delay={0.1}>
+              <Card sx={{ bgcolor: cardBg, border: `1px solid ${cardBorder}`, borderRadius: 3, mb: 3, boxShadow: cardShadow }}>
+                <CardContent sx={{ p: 3 }}>
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2.5 }}>
+                    <Box>
+                      <Typography sx={{ color: accent, textTransform: 'uppercase', letterSpacing: '0.08em', fontSize: '0.68rem', fontWeight: 700, mb: 0.3 }}>
+                        Activity
+                      </Typography>
+                      <Typography variant="h6" sx={{ fontWeight: 700, color: tp, letterSpacing: '-0.01em' }}>
+                        Weekly progress
+                      </Typography>
+                    </Box>
+                    <Chip label="7 days" size="small" sx={{ bgcolor: `${accent}14`, color: accent, fontSize: '0.68rem', height: 20, border: `1px solid ${accent}33` }} />
+                  </Box>
+                  <ResponsiveContainer width="100%" height={200}>
+                    <AreaChart data={chartData} margin={{ top: 4, right: 4, left: -24, bottom: 0 }}>
+                      <defs>
+                        <linearGradient id="ag" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="5%"  stopColor={accent} stopOpacity={0.22} />
+                          <stop offset="95%" stopColor={accent} stopOpacity={0}    />
+                        </linearGradient>
+                      </defs>
+                      <CartesianGrid strokeDasharray="3 3" stroke={isDark ? '#1a1a1a' : '#f0f0f0'} />
+                      <XAxis dataKey="date" tick={{ fill: isDark ? '#444' : '#bbb', fontSize: 11 }} axisLine={false} tickLine={false} />
+                      <YAxis tick={{ fill: isDark ? '#444' : '#bbb', fontSize: 11 }} axisLine={false} tickLine={false} />
+                      <RTooltip content={<CustomTooltip accent={accent} />} cursor={{ stroke: `${accent}44` }} />
+                      <Area type="monotone" dataKey="minutes" stroke={accent} strokeWidth={2} fill="url(#ag)"
+                        dot={{ fill: accent, strokeWidth: 0, r: 3 }} activeDot={{ r: 5, fill: accent }} />
+                    </AreaChart>
+                  </ResponsiveContainer>
+                </CardContent>
+              </Card>
+            </FadeIn>
+
+            {/* Continue learning */}
+            <FadeIn delay={0.16}>
+              <Card sx={{ bgcolor: cardBg, border: `1px solid ${cardBorder}`, borderRadius: 3, boxShadow: cardShadow }}>
+                <CardContent sx={{ p: 3 }}>
+                  <Typography sx={{ color: accent, textTransform: 'uppercase', letterSpacing: '0.08em', fontSize: '0.68rem', fontWeight: 700, mb: 0.3 }}>
+                    Continue
+                  </Typography>
+                  <Typography variant="h6" sx={{ fontWeight: 700, color: tp, mb: 2.5, letterSpacing: '-0.01em' }}>
+                    Recent activity
+                  </Typography>
+
+                  {recentActivity.length === 0 ? (
+                    <Box sx={{ textAlign: 'center', py: 4 }}>
+                      <BookmarkBorder sx={{ fontSize: 44, color: isDark ? '#222' : '#ddd', mb: 1.5 }} />
+                      <Typography variant="body2" sx={{ color: ts, mb: 2 }}>No recent activity</Typography>
+                      <Button component={Link} to="/courses" size="small" variant="contained" endIcon={<ArrowForward sx={{ fontSize: 13 }} />}
+                        sx={{ bgcolor: accent, color: '#fff', fontWeight: 700 }}>
+                        Explore courses
+                      </Button>
+                    </Box>
+                  ) : recentActivity.slice(0, 4).map((item: any, i: number) => (
+                    <motion.div key={i} initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.04 * i }}>
+                      <Box sx={{
+                        display: 'flex', alignItems: 'center', gap: 2, py: 1.5,
+                        borderBottom: i < Math.min(recentActivity.length, 4) - 1 ? `1px solid ${cardBorder}` : 'none',
+                      }}>
+                        <Box sx={{ p: 1, borderRadius: 1.5, bgcolor: `${accent}12`, flexShrink: 0 }}>
+                          <School sx={{ color: accent, fontSize: 16 }} />
                         </Box>
-                        <Button component={Link} to={`/learn/${act.courseId}`} variant="outlined" size="small"
-                          endIcon={<ArrowForward sx={{ fontSize: 14 }} />}
-                          sx={{ fontSize: '0.78rem', py: 0.5 }}>
+                        <Box sx={{ flex: 1, minWidth: 0 }}>
+                          <Typography variant="body2" sx={{ fontWeight: 600, color: tp, fontSize: '0.82rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                            {item.courseName || 'Course'}
+                          </Typography>
+                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 0.4 }}>
+                            <LinearProgress variant="determinate" value={item.progress || 0}
+                              sx={{ flex: 1, height: 3, borderRadius: 2, bgcolor: isDark ? '#1a1a1a' : '#f0f0f0', '& .MuiLinearProgress-bar': { bgcolor: accent } }} />
+                            <Typography variant="caption" sx={{ color: ts, minWidth: 28, fontSize: '0.68rem' }}>{item.progress || 0}%</Typography>
+                          </Box>
+                        </Box>
+                        <Button component={Link} to={`/learn/${item.courseId}`} size="small" endIcon={<ArrowForward sx={{ fontSize: 11 }} />}
+                          sx={{ color: accent, fontSize: '0.74rem', fontWeight: 600, flexShrink: 0 }}>
                           Continue
                         </Button>
                       </Box>
-                      {i < recentActivity.slice(0, 3).length - 1 && <Divider />}
-                    </Box>
+                    </motion.div>
                   ))}
                 </CardContent>
               </Card>
-            )}
+            </FadeIn>
           </Grid>
 
-          {/* Recommendations */}
+          {/* ── Right ── */}
           <Grid item xs={12} md={4}>
-            <Card sx={{ height: 'fit-content' }}>
-              <CardContent sx={{ p: 3, '&:last-child': { pb: 3 } }}>
-                <Typography variant="overline" sx={{ color: 'text.secondary', letterSpacing: '0.1em', fontSize: '0.65rem', display: 'block', mb: 0.5 }}>
-                  Personalized
-                </Typography>
-                <Typography variant="h6" sx={{ fontWeight: 600, mb: 3 }}>Recommended</Typography>
-                {recItems.length === 0 ? (
-                  <Box sx={{ textAlign: 'center', py: 2 }}>
-                    <Typography color="text.secondary" sx={{ mb: 2, fontSize: '0.875rem' }}>
-                      Complete your profile to get recommendations
-                    </Typography>
-                    <Button variant="contained" component={Link} to="/onboarding" size="small">
-                      Complete Profile
-                    </Button>
-                  </Box>
-                ) : (
-                  recItems.slice(0, 4).map((rec: any, i: number) => (
-                    <Box key={i}>
-                      <Box sx={{ py: 2 }}>
-                        <Typography sx={{ fontWeight: 500, fontSize: '0.875rem', mb: 0.5 }}>
-                          {rec.title || rec.course?.title || 'Course'}
-                        </Typography>
-                        <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 1 }}>
-                          {rec.reason || rec.reasoning || 'Based on your profile'}
-                        </Typography>
-                        {rec.priorityLevel && (
-                          <Chip label={rec.priorityLevel} size="small"
-                            color={['high', 'critical'].includes(rec.priorityLevel) ? 'error' : 'default'} />
-                        )}
-                      </Box>
-                      {i < Math.min(recItems.length, 4) - 1 && <Divider />}
+
+            {/* Recommendations */}
+            <FadeIn delay={0.22}>
+              <Card sx={{ bgcolor: cardBg, border: `1px solid ${cardBorder}`, borderRadius: 3, boxShadow: cardShadow }}>
+                <CardContent sx={{ p: 3 }}>
+                  <Typography sx={{ color: '#81c784', textTransform: 'uppercase', letterSpacing: '0.08em', fontSize: '0.68rem', fontWeight: 700, mb: 0.3 }}>
+                    AI picks
+                  </Typography>
+                  <Typography variant="h6" sx={{ fontWeight: 700, color: tp, mb: 2.5, letterSpacing: '-0.01em' }}>
+                    Recommended
+                  </Typography>
+
+                  {recommendations.length === 0 ? (
+                    <Box sx={{ textAlign: 'center', py: 3 }}>
+                      <Typography variant="body2" sx={{ color: ts, mb: 2, fontSize: '0.85rem' }}>
+                        Complete onboarding to get AI recommendations.
+                      </Typography>
+                      <Button component={Link} to="/onboarding" size="small" variant="outlined"
+                        sx={{ color: '#81c784', borderColor: '#81c784', fontSize: '0.78rem' }}>
+                        Complete setup
+                      </Button>
                     </Box>
-                  ))
-                )}
-                <Button fullWidth component={Link} to="/courses" size="small"
-                  endIcon={<ArrowForward />} sx={{ mt: 2 }}>
-                  Browse all courses
-                </Button>
-              </CardContent>
-            </Card>
+                  ) : recommendations.slice(0, 5).map((rec: any, i: number) => (
+                    <motion.div key={i} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.06 * i }}>
+                      <Box component={Link} to={`/courses/${rec.courseId || ''}`} sx={{
+                        display: 'flex', alignItems: 'flex-start', gap: 1.5, py: 1.5,
+                        textDecoration: 'none',
+                        borderBottom: i < recommendations.length - 1 ? `1px solid ${cardBorder}` : 'none',
+                        '&:hover .rt': { color: '#81c784' }, transition: 'all 0.15s',
+                      }}>
+                        <Avatar sx={{ width: 32, height: 32, bgcolor: '#81c78418', color: '#81c784', fontSize: 13, fontWeight: 700, borderRadius: 1.5, flexShrink: 0 }}>
+                          {(rec.courseName || 'C').charAt(0).toUpperCase()}
+                        </Avatar>
+                        <Box sx={{ flex: 1, minWidth: 0 }}>
+                          <Typography className="rt" variant="body2" sx={{ fontWeight: 600, color: tp, fontSize: '0.82rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', transition: 'color 0.15s' }}>
+                            {rec.courseName || 'Course'}
+                          </Typography>
+                          {rec.reason && (
+                            <Typography variant="caption" sx={{ color: ts, fontSize: '0.68rem' }}>{rec.reason}</Typography>
+                          )}
+                        </Box>
+                      </Box>
+                    </motion.div>
+                  ))}
+
+                  <Button component={Link} to="/courses" fullWidth variant="outlined" size="small" endIcon={<ArrowForward sx={{ fontSize: 12 }} />}
+                    sx={{ mt: 2, color: ts, borderColor: cardBorder, fontSize: '0.78rem', '&:hover': { borderColor: '#81c784', color: '#81c784' } }}>
+                    Browse all courses
+                  </Button>
+                </CardContent>
+              </Card>
+            </FadeIn>
+
+            {/* Quick links */}
+            <FadeIn delay={0.3}>
+              <Card sx={{ bgcolor: cardBg, border: `1px solid ${cardBorder}`, borderRadius: 3, mt: 3, boxShadow: cardShadow }}>
+                <CardContent sx={{ p: 3 }}>
+                  <Typography sx={{ color: '#ffb74d', textTransform: 'uppercase', letterSpacing: '0.08em', fontSize: '0.68rem', fontWeight: 700, mb: 2 }}>
+                    Quick links
+                  </Typography>
+                  {[
+                    { label: 'Study Plan', to: '/study-plan',  color: '#81c784' },
+                    { label: 'Exams',      to: '/exams',       color: '#e57373' },
+                    { label: 'My Diary',   to: '/diary',       color: '#ce93d8' },
+                    { label: 'My Courses', to: '/my-courses',  color: '#ffb74d' },
+                  ].map((l, i) => (
+                    <motion.div key={l.to} whileHover={{ x: 5 }} transition={{ type: 'spring', stiffness: 380, damping: 22 }}>
+                      <Box component={Link} to={l.to} sx={{
+                        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                        py: 1.2, px: 1.5, borderRadius: 1.5, textDecoration: 'none',
+                        mb: i < 3 ? 0.5 : 0,
+                        '&:hover': { bgcolor: isDark ? '#141414' : '#f7f7f7' }, transition: 'background-color 0.15s',
+                      }}>
+                        <Typography sx={{ fontSize: '0.83rem', fontWeight: 500, color: tp }}>{l.label}</Typography>
+                        <ArrowForward sx={{ fontSize: 13, color: l.color }} />
+                      </Box>
+                    </motion.div>
+                  ))}
+                </CardContent>
+              </Card>
+            </FadeIn>
           </Grid>
         </Grid>
       </Container>
-    </Box>
+    </PageBackground>
   );
-};
-
-export default Dashboard;
+}

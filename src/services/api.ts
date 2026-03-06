@@ -16,7 +16,8 @@ const api = axios.create({
   headers: {
     'Content-Type': 'application/json'
   },
-  withCredentials: false
+  withCredentials: false,
+  timeout: 60000  // 60s — AI calls (roadmap generation, blog search) can take 15-30s
 });
 
 let isRefreshing = false;
@@ -61,7 +62,7 @@ api.interceptors.response.use(
       const token = localStorage.getItem('token');
       if (token) {
         try {
-          const res = await axios.post(`${API_URL}/auth/refresh`);
+          const res = await axios.post(`${API_URL}/auth/refresh`, {}, { timeout: 15000 });
           const newToken = res.data.token;
           localStorage.setItem('token', newToken);
           processQueue(null);
@@ -94,6 +95,7 @@ export const authAPI = {
     api.post('/auth/register', data),
   getMe: () => api.get('/auth/me'),
   updateProfile: (data: any) => api.put('/auth/profile', data),
+  updateAvatar: (avatar: string) => api.put('/auth/avatar', { avatar }),
   completeOnboarding: (data: any) => api.put('/auth/complete-onboarding', data),
   sendOTP: (email: string) => api.post('/auth/send-otp', { email }),
   verifyOTPRegister: (data: { email: string; otp: string; name: string; password: string; role: string; phone?: string }) =>
@@ -196,6 +198,24 @@ export const chatbotAPI = {
   getNextVideo: () => api.get('/chatbot/next-video')
 };
 
+export const topicsAPI = {
+  addSubject: (subject: string) => api.post('/topics/add-subject', { subject }),
+  getSubjects: () => api.get('/topics/subjects'),
+  getRoadmap: (subject: string) => api.get(`/topics/roadmap/${subject}`),
+  completeTopic: (subject: string, topicTitle: string) => 
+    api.post('/topics/complete-topic', { subject, topicTitle }),
+  completeSubtopic: (subject: string, topicTitle: string, subtopicTitle: string) =>
+    api.post('/topics/complete-subtopic', { subject, topicTitle, subtopicTitle }),
+  getNextTopic: (subject: string) => api.get(`/topics/next/${subject}`),
+  getSubtopics: (subject: string, topicTitle: string) => api.get(`/topics/subtopics/${subject}/${encodeURIComponent(topicTitle)}`),
+  getSubtopicResources: (subject: string, topicTitle: string, subtopicTitle: string) => 
+    api.get(`/topics/resources/subtopic/${encodeURIComponent(subject)}/${encodeURIComponent(topicTitle)}/${encodeURIComponent(subtopicTitle)}`),
+  getResources: (subject: string, topic: string, type?: string) => 
+    api.get(`/topics/resources/${subject}/${topic}`, { params: { type } }),
+  deleteSubject: (id: string) => api.delete(`/topics/subject/${id}`),
+  initializeFromWeakAreas: () => api.post('/topics/initialize-from-weak-areas', {})
+};
+
 export const adminAPI = {
   login: (username: string, password: string) => api.post('/admin/login', { username, password }),
   listAdmins: () => api.get('/admin/list'),
@@ -210,6 +230,8 @@ export const adminAPI = {
   getUsers: (params?: any) => api.get('/admin/users', { params }),
   getUser: (id: string) => api.get(`/admin/users/${id}`),
   updateUserRole: (id: string, role: string) => api.put(`/admin/users/${id}/role`, { role }),
+  updateUser: (id: string, data: { name?: string; email?: string; role?: string }) => api.put(`/admin/users/${id}`, data),
+  blockUser: (id: string, blocked: boolean) => api.put(`/admin/users/${id}/block`, { blocked }),
   deleteUser: (id: string) => api.delete(`/admin/users/${id}`),
   
   // Courses
