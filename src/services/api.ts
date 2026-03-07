@@ -219,7 +219,14 @@ export const topicsAPI = {
 export const adminAPI = {
   login: (username: string, password: string) => api.post('/admin/login', { username, password }),
   listAdmins: () => api.get('/admin/list'),
-  addAdmin: (data: { username: string; password: string; email: string; isSuperAdmin?: boolean }) => 
+  addAdmin: (data: { username: string; password: string; email: string; isSuperAdmin?: boolean; permissions?: {
+    manageUsers: boolean;
+    manageCourses: boolean;
+    manageExams: boolean;
+    manageAdmins: boolean;
+    viewAnalytics: boolean;
+    manageContent: boolean;
+  } }) => 
     api.post('/admin/add', data),
   removeAdmin: (id: string) => api.delete(`/admin/${id}`),
   

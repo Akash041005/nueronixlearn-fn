@@ -4,12 +4,12 @@ import {
   Table, TableBody, TableCell, TableContainer, TableHead, TableRow,
   Chip, CircularProgress, Tabs, Tab, Avatar, Select, MenuItem, FormControl,
   InputLabel, IconButton, Dialog, DialogTitle, DialogContent, DialogActions,
-  Alert, Tooltip, InputAdornment, LinearProgress, Divider
+  Alert, Tooltip, InputAdornment, LinearProgress, Divider, Checkbox, FormControlLabel
 } from '@mui/material';
 import {
   Search, Delete, Edit, Block, CheckCircle, People, School, Assignment,
   Logout, Refresh, Close, Save, BarChart, PersonAdd, AdminPanelSettings,
-  MenuBook, Quiz, TrendingUp, DoNotDisturb
+  MenuBook, Quiz, TrendingUp, DoNotDisturb, Security
 } from '@mui/icons-material';
 import {
   BarChart as ReBarChart, Bar, XAxis, YAxis, CartesianGrid,
@@ -120,10 +120,37 @@ export default function AdminPanel() {
   const [userGrowth,  setUserGrowth]  = useState<any[]>([]);
   const [statsLoading, setStatsLoading] = useState(false);
 
+  // ── Admin Management ───────────────────────────────────────────────────────
+  const [isSuperAdmin, setIsSuperAdmin] = useState(false);
+  const [admins, setAdmins] = useState<any[]>([]);
+  const [adminsLoading, setAdminsLoading] = useState(false);
+  const [addAdminDialog, setAddAdminDialog] = useState(false);
+  const [newAdminUsername, setNewAdminUsername] = useState('');
+  const [newAdminEmail, setNewAdminEmail] = useState('');
+  const [newAdminPassword, setNewAdminPassword] = useState('');
+  const [newAdminIsSuperAdmin, setNewAdminIsSuperAdmin] = useState(false);
+  const [newAdminPermissions, setNewAdminPermissions] = useState({
+    manageUsers: false,
+    manageCourses: false,
+    manageExams: false,
+    manageAdmins: false,
+    viewAnalytics: false,
+    manageContent: false
+  });
+  const [addingAdmin, setAddingAdmin] = useState(false);
+
   // ── Auth ──────────────────────────────────────────────────────────────────
 
   useEffect(() => {
-    if (localStorage.getItem('adminToken')) setAuthed(true);
+    const token = localStorage.getItem('adminToken');
+    const adminInfo = localStorage.getItem('adminInfo');
+    if (token) {
+      setAuthed(true);
+      if (adminInfo) {
+        const info = JSON.parse(adminInfo);
+        setIsSuperAdmin(info.isSuperAdmin || false);
+      }
+    }
   }, []);
 
   const handleLogin = async () => {
@@ -131,12 +158,18 @@ export default function AdminPanel() {
     try {
       const res = await adminAPI.login(username, password);
       localStorage.setItem('adminToken', res.data.token);
+      localStorage.setItem('adminInfo', JSON.stringify(res.data.admin));
+      setIsSuperAdmin(res.data.admin.isSuperAdmin);
       setAuthed(true);
     } catch (e: any) { setLoginErr(e.response?.data?.error || 'Invalid credentials'); }
     finally { setLoggingIn(false); }
   };
 
-  const handleLogout = () => { localStorage.removeItem('adminToken'); setAuthed(false); };
+  const handleLogout = () => { 
+    localStorage.removeItem('adminToken'); 
+    localStorage.removeItem('adminInfo');
+    setAuthed(false); 
+  };
 
   // ── Data loaders ──────────────────────────────────────────────────────────
 
@@ -173,6 +206,63 @@ export default function AdminPanel() {
     } catch { /* silent */ } finally { setCoursesLoading(false); }
   }, [courseSearch]);
 
+  const loadAdmins = useCallback(async () => {
+    if (!isSuperAdmin) return;
+    setAdminsLoading(true);
+    try {
+      const res = await adminAPI.listAdmins();
+      setAdmins(res.data.admins || []);
+    } catch { /* silent */ } finally { setAdminsLoading(false); }
+  }, [isSuperAdmin]);
+
+  const handleAddAdmin = async () => {
+    if (!newAdminUsername || !newAdminEmail || !newAdminPassword) {
+      flash('Please fill all required fields', true);
+      return;
+    }
+    setAddingAdmin(true);
+    try {
+      await adminAPI.addAdmin({
+        username: newAdminUsername,
+        email: newAdminEmail,
+        password: newAdminPassword,
+        isSuperAdmin: newAdminIsSuperAdmin,
+        permissions: newAdminPermissions
+      });
+      flash('Admin created successfully');
+      setAddAdminDialog(false);
+      setNewAdminUsername('');
+      setNewAdminEmail('');
+      setNewAdminPassword('');
+      setNewAdminIsSuperAdmin(false);
+      setNewAdminPermissions({
+        manageUsers: false,
+        manageCourses: false,
+        manageExams: false,
+        manageAdmins: false,
+        viewAnalytics: false,
+        manageContent: false
+      });
+      loadAdmins();
+    } catch (e: any) {
+      flash(e.response?.data?.error || 'Failed to create admin', true);
+    } finally {
+      setAddingAdmin(false);
+    }
+  };
+
+  const handleDeleteAdmin = async (id: string) => {
+    if (!window.confirm('Are you sure you want to remove this admin?')) return;
+    try {
+      await adminAPI.removeAdmin(id);
+      flash('Admin removed');
+      loadAdmins();
+    } catch {
+      flash('Failed to remove admin', true);
+    }
+  };
+
+  useEffect(() => { if (authed && isSuperAdmin) loadAdmins(); }, [authed, isSuperAdmin, loadAdmins]);
   useEffect(() => { if (authed) { loadStats(); loadUsers(); } }, [authed, loadStats, loadUsers]);
   useEffect(() => { if (authed && tab === 2) loadCourses(); }, [authed, tab, loadCourses]);
 
@@ -251,6 +341,7 @@ export default function AdminPanel() {
     { icon: PersonAdd,    label: 'New this week',     value: stats?.newUsersWeek     ?? 0, color: '#ffb74d', delay: 0.12 },
     { icon: DoNotDisturb, label: 'Blocked users',     value: stats?.blockedUsers     ?? 0, color: '#e57373', delay: 0.18 },
     { icon: School,       label: 'Students',          value: stats?.totalStudents    ?? 0, color: '#4db6ac', delay: 0.24 },
+    { icon: Security,     label: 'Admins',            value: stats?.totalAdmins      ?? 0, color: '#f48fb1', delay: 0.27 },
     { icon: MenuBook,     label: 'Courses',           value: stats?.totalCourses     ?? 0, color: '#ce93d8', delay: 0.30 },
     { icon: Quiz,         label: 'Exams',             value: stats?.totalExams       ?? 0, color: '#80cbc4', delay: 0.36 },
     { icon: BarChart,     label: 'Subjects in study', value: stats?.totalSubjects    ?? 0, color: '#a5d6a7', delay: 0.42 },
@@ -318,6 +409,7 @@ export default function AdminPanel() {
             <Tab label="Users" />
             <Tab label="Analytics" />
             <Tab label="Courses" />
+            {isSuperAdmin && <Tab label="Admins" icon={<Security sx={{ fontSize: 14 }} />} iconPosition="end" />}
           </Tabs>
 
           {/* ── USERS TAB ── */}
@@ -567,6 +659,90 @@ export default function AdminPanel() {
                 )}
             </Box>
           </TabPanel>
+
+          {/* ── ADMINS TAB (Super Admin Only) ── */}
+          <TabPanel value={tab} index={3}>
+            <Box sx={{ px: 2, pb: 2 }}>
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2.5 }}>
+                <Typography variant="body2" color="#555">{admins.length} admin(s)</Typography>
+                <Button 
+                  variant="contained" 
+                  startIcon={<PersonAdd sx={{ fontSize: 16 }} />}
+                  onClick={() => setAddAdminDialog(true)}
+                  sx={{ bgcolor: ACCENT, color: '#000', fontWeight: 700, fontSize: '0.75rem', px: 2, '&:hover': { bgcolor: '#29b6f6' } }}
+                >
+                  Add Admin
+                </Button>
+              </Box>
+
+              {adminsLoading
+                ? <LinearProgress sx={{ bgcolor: '#1a1a1a', '& .MuiLinearProgress-bar': { bgcolor: ACCENT } }} />
+                : (
+                  <TableContainer>
+                    <Table size="small">
+                      <TableHead>
+                        <TableRow>
+                          {['Username', 'Email', 'Role', 'Permissions', 'Created', 'Actions'].map(h => (
+                            <TableCell key={h} sx={headSx}>{h}</TableCell>
+                          ))}
+                        </TableRow>
+                      </TableHead>
+                      <TableBody>
+                        {admins.map(a => (
+                          <TableRow key={a._id} sx={{ '&:hover': { bgcolor: '#141414' } }}>
+                            <TableCell sx={cellSx}>
+                              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                <Avatar sx={{ width: 28, height: 28, bgcolor: '#1e1e1e', fontSize: 12, color: ACCENT }}>
+                                  {a.username.charAt(0).toUpperCase()}
+                                </Avatar>
+                                <Typography sx={{ fontSize: '0.82rem', color: '#e8e8e8', fontWeight: 500 }}>{a.username}</Typography>
+                              </Box>
+                            </TableCell>
+                            <TableCell sx={{ ...cellSx, color: '#666' }}>{a.email}</TableCell>
+                            <TableCell sx={cellSx}>
+                              <Chip 
+                                label={a.isSuperAdmin ? 'Super Admin' : 'Admin'} 
+                                size="small"
+                                sx={{ 
+                                  bgcolor: a.isSuperAdmin ? 'rgba(229,115,115,0.1)' : 'rgba(79,195,247,0.1)', 
+                                  color: a.isSuperAdmin ? '#e57373' : ACCENT,
+                                  border: `1px solid ${a.isSuperAdmin ? 'rgba(229,115,115,0.25)' : 'rgba(79,195,247,0.25)'}`, 
+                                  fontSize: '0.68rem', height: 19 
+                                }} 
+                              />
+                            </TableCell>
+                            <TableCell sx={cellSx}>
+                              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.25 }}>
+                                {a.isSuperAdmin ? (
+                                  <Chip label="Full Access" size="small" sx={{ bgcolor: 'rgba(229,115,115,0.1)', color: '#e57373', fontSize: '0.6rem', height: 16 }} />
+                                ) : (
+                                  <>
+                                    {a.permissions?.manageUsers && <Chip label="Users" size="small" sx={{ bgcolor: 'rgba(79,195,247,0.1)', color: ACCENT, fontSize: '0.6rem', height: 16 }} />}
+                                    {a.permissions?.manageCourses && <Chip label="Courses" size="small" sx={{ bgcolor: 'rgba(206,147,216,0.1)', color: '#ce93d8', fontSize: '0.6rem', height: 16 }} />}
+                                    {a.permissions?.manageExams && <Chip label="Exams" size="small" sx={{ bgcolor: 'rgba(128,203,196,0.1)', color: '#80cbc4', fontSize: '0.6rem', height: 16 }} />}
+                                    {a.permissions?.manageAdmins && <Chip label="Admins" size="small" sx={{ bgcolor: 'rgba(255,183,77,0.1)', color: '#ffb74d', fontSize: '0.6rem', height: 16 }} />}
+                                    {a.permissions?.viewAnalytics && <Chip label="Analytics" size="small" sx={{ bgcolor: 'rgba(165,214,167,0.1)', color: '#a5d6a7', fontSize: '0.6rem', height: 16 }} />}
+                                    {a.permissions?.manageContent && <Chip label="Content" size="small" sx={{ bgcolor: 'rgba(244,143,177,0.1)', color: '#f48fb1', fontSize: '0.6rem', height: 16 }} />}
+                                  </>
+                                )}
+                              </Box>
+                            </TableCell>
+                            <TableCell sx={{ ...cellSx, color: '#444' }}>{new Date(a.createdAt).toLocaleDateString()}</TableCell>
+                            <TableCell sx={cellSx}>
+                              <Tooltip title="Remove admin">
+                                <IconButton size="small" onClick={() => handleDeleteAdmin(a._id)} sx={{ color: '#444', '&:hover': { color: '#e57373' } }}>
+                                  <Delete sx={{ fontSize: 14 }} />
+                                </IconButton>
+                              </Tooltip>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </TableContainer>
+                )}
+            </Box>
+          </TabPanel>
         </Card>
       </Container>
 
@@ -651,6 +827,73 @@ export default function AdminPanel() {
             </Box>
           ) : <Typography color="#555" textAlign="center" py={3}>No data</Typography>}
         </DialogContent>
+      </Dialog>
+
+      {/* ── Add Admin dialog ── */}
+      <Dialog open={addAdminDialog} onClose={() => setAddAdminDialog(false)} maxWidth="sm" fullWidth
+        PaperProps={{ sx: { bgcolor: '#111', color: '#fff', border: `1px solid ${BORDER}`, borderRadius: 3 } }}>
+        <DialogTitle sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <Typography fontWeight={700}>Add New Admin</Typography>
+          <IconButton onClick={() => setAddAdminDialog(false)} sx={{ color: '#555' }}><Close fontSize="small" /></IconButton>
+        </DialogTitle>
+        <DialogContent sx={{ pt: 1 }}>
+          <Grid container spacing={2} sx={{ mt: 0.5 }}>
+            <Grid item xs={12}>
+              <TextField fullWidth label="Username" value={newAdminUsername} onChange={e => setNewAdminUsername(e.target.value)} sx={fieldSx} />
+            </Grid>
+            <Grid item xs={12}>
+              <TextField fullWidth label="Email" type="email" value={newAdminEmail} onChange={e => setNewAdminEmail(e.target.value)} sx={fieldSx} />
+            </Grid>
+            <Grid item xs={12}>
+              <TextField fullWidth label="Password" type="password" value={newAdminPassword} onChange={e => setNewAdminPassword(e.target.value)} sx={fieldSx} />
+            </Grid>
+            <Grid item xs={12}>
+              <FormControlLabel
+                control={<Checkbox checked={newAdminIsSuperAdmin} onChange={e => setNewAdminIsSuperAdmin(e.target.checked)} sx={{ color: '#555', '&.Mui-checked': { color: ACCENT } }} />}
+                label={<Typography sx={{ color: '#bbb', fontSize: '0.85rem' }}>Make Super Admin (has full access)</Typography>}
+              />
+            </Grid>
+            {!newAdminIsSuperAdmin && (
+              <Grid item xs={12}>
+                <Typography sx={{ color: '#555', fontSize: '0.75rem', mb: 1, fontWeight: 700 }}>PERMISSIONS</Typography>
+                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+                  <FormControlLabel
+                    control={<Checkbox checked={newAdminPermissions.manageUsers} onChange={e => setNewAdminPermissions(p => ({ ...p, manageUsers: e.target.checked }))} sx={{ color: '#555', '&.Mui-checked': { color: ACCENT } }} />}
+                    label={<Typography sx={{ color: '#bbb', fontSize: '0.8rem' }}>Manage Users</Typography>}
+                  />
+                  <FormControlLabel
+                    control={<Checkbox checked={newAdminPermissions.manageCourses} onChange={e => setNewAdminPermissions(p => ({ ...p, manageCourses: e.target.checked }))} sx={{ color: '#555', '&.Mui-checked': { color: '#ce93d8' } }} />}
+                    label={<Typography sx={{ color: '#bbb', fontSize: '0.8rem' }}>Manage Courses</Typography>}
+                  />
+                  <FormControlLabel
+                    control={<Checkbox checked={newAdminPermissions.manageExams} onChange={e => setNewAdminPermissions(p => ({ ...p, manageExams: e.target.checked }))} sx={{ color: '#555', '&.Mui-checked': { color: '#80cbc4' } }} />}
+                    label={<Typography sx={{ color: '#bbb', fontSize: '0.8rem' }}>Manage Exams</Typography>}
+                  />
+                  <FormControlLabel
+                    control={<Checkbox checked={newAdminPermissions.manageAdmins} onChange={e => setNewAdminPermissions(p => ({ ...p, manageAdmins: e.target.checked }))} sx={{ color: '#555', '&.Mui-checked': { color: '#ffb74d' } }} />}
+                    label={<Typography sx={{ color: '#bbb', fontSize: '0.8rem' }}>Manage Admins</Typography>}
+                  />
+                  <FormControlLabel
+                    control={<Checkbox checked={newAdminPermissions.viewAnalytics} onChange={e => setNewAdminPermissions(p => ({ ...p, viewAnalytics: e.target.checked }))} sx={{ color: '#555', '&.Mui-checked': { color: '#a5d6a7' } }} />}
+                    label={<Typography sx={{ color: '#bbb', fontSize: '0.8rem' }}>View Analytics</Typography>}
+                  />
+                  <FormControlLabel
+                    control={<Checkbox checked={newAdminPermissions.manageContent} onChange={e => setNewAdminPermissions(p => ({ ...p, manageContent: e.target.checked }))} sx={{ color: '#555', '&.Mui-checked': { color: '#f48fb1' } }} />}
+                    label={<Typography sx={{ color: '#bbb', fontSize: '0.8rem' }}>Manage Content</Typography>}
+                  />
+                </Box>
+              </Grid>
+            )}
+          </Grid>
+        </DialogContent>
+        <DialogActions sx={{ px: 3, pb: 3 }}>
+          <Button onClick={() => setAddAdminDialog(false)} sx={{ color: '#555' }}>Cancel</Button>
+          <Button variant="contained" onClick={handleAddAdmin} disabled={addingAdmin}
+            startIcon={addingAdmin ? <CircularProgress size={14} color="inherit" /> : <Save sx={{ fontSize: 14 }} />}
+            sx={{ bgcolor: ACCENT, color: '#000', fontWeight: 700, '&:hover': { bgcolor: '#29b6f6' } }}>
+            {addingAdmin ? 'Creating…' : 'Create Admin'}
+          </Button>
+        </DialogActions>
       </Dialog>
     </Box>
   );
