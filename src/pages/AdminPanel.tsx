@@ -780,52 +780,203 @@ export default function AdminPanel() {
       </Dialog>
 
       {/* ── View user dialog ── */}
-      <Dialog open={Boolean(viewUser)} onClose={() => setViewUser(null)} maxWidth="sm" fullWidth
-        PaperProps={{ sx: { bgcolor: '#111', color: '#fff', border: `1px solid ${BORDER}`, borderRadius: 3 } }}>
-        <DialogTitle sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <Typography fontWeight={700}>User Details</Typography>
+      <Dialog open={Boolean(viewUser)} onClose={() => setViewUser(null)} maxWidth="lg" fullWidth
+        PaperProps={{ sx: { bgcolor: '#111', color: '#fff', border: `1px solid ${BORDER}`, borderRadius: 3, maxHeight: '90vh' } }}>
+        <DialogTitle sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', pb: 1, borderBottom: `1px solid ${BORDER}` }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+            <Avatar src={viewDetail?.user?.avatar} sx={{ width: 48, height: 48, bgcolor: '#1a1a1a', color: ACCENT, fontSize: 20 }}>
+              {!viewDetail?.user?.avatar && viewDetail?.user?.name?.charAt(0).toUpperCase()}
+            </Avatar>
+            <Box>
+              <Typography fontWeight={700}>{viewDetail?.user?.name}</Typography>
+              <Typography variant="caption" color="#666">{viewDetail?.user?.email}</Typography>
+            </Box>
+          </Box>
           <IconButton onClick={() => setViewUser(null)} sx={{ color: '#555' }}><Close fontSize="small" /></IconButton>
         </DialogTitle>
-        <DialogContent>
+        <DialogContent sx={{ pt: 2 }}>
           {viewLoading ? (
-            <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}><CircularProgress sx={{ color: ACCENT }} /></Box>
+            <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}><CircularProgress sx={{ color: ACCENT }} /></Box>
           ) : viewDetail ? (
             <Box>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 3 }}>
-                <Avatar src={viewDetail.user?.avatar} sx={{ width: 52, height: 52, bgcolor: '#1a1a1a', color: ACCENT, fontSize: 20 }}>
-                  {!viewDetail.user?.avatar && viewDetail.user?.name?.charAt(0).toUpperCase()}
-                </Avatar>
-                <Box>
-                  <Typography fontWeight={700}>{viewDetail.user?.name}</Typography>
-                  <Typography variant="body2" color="#555">{viewDetail.user?.email}</Typography>
-                  <Chip label={viewDetail.user?.role} size="small"
-                    sx={{ mt: 0.5, bgcolor: `${roleColor[viewDetail.user?.role] || ACCENT}18`, color: roleColor[viewDetail.user?.role] || ACCENT, fontSize: '0.68rem', height: 18 }} />
-                </Box>
-              </Box>
-              <Divider sx={{ borderColor: BORDER, mb: 2 }} />
-              {[
-                { label: 'Status',  value: viewDetail.user?.isActive ? 'Active' : 'Blocked' },
-                { label: 'Joined',  value: new Date(viewDetail.user?.createdAt).toLocaleDateString() },
-                { label: 'Onboarded', value: viewDetail.user?.onboardingCompleted ? 'Yes' : 'No' },
-                { label: 'Progress records', value: viewDetail.progress?.length ?? 0 },
-              ].map(item => (
-                <Box key={item.label} sx={{ display: 'flex', justifyContent: 'space-between', py: 0.75, borderBottom: `1px solid ${BORDER}` }}>
-                  <Typography variant="body2" color="#555">{item.label}</Typography>
-                  <Typography variant="body2" fontWeight={500}>{item.value}</Typography>
-                </Box>
-              ))}
-              {viewDetail.user?.profile?.subjectInterests?.length > 0 && (
-                <Box sx={{ mt: 2 }}>
-                  <Typography variant="caption" color="#555" sx={{ mb: 1, display: 'block' }}>Subject interests</Typography>
-                  <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
-                    {viewDetail.user.profile.subjectInterests.map((s: string) => (
-                      <Chip key={s} label={s} size="small" sx={{ bgcolor: `${ACCENT}12`, color: ACCENT, fontSize: '0.68rem', height: 18 }} />
-                    ))}
+              {/* Main Stats Row */}
+              <Grid container spacing={2} sx={{ mb: 3 }}>
+                <Grid item xs={6} sm={4} md={2}>
+                  <Box sx={{ p: 1.5, borderRadius: 2, bgcolor: '#0d0d0d', border: `1px solid ${BORDER}`, textAlign: 'center' }}>
+                    <Typography sx={{ fontSize: '1.8rem', fontWeight: 800, color: ACCENT }}>{viewDetail.stats?.totalProgress || 0}</Typography>
+                    <Typography variant="caption" color="#555">Courses</Typography>
                   </Box>
-                </Box>
-              )}
+                </Grid>
+                <Grid item xs={6} sm={4} md={2}>
+                  <Box sx={{ p: 1.5, borderRadius: 2, bgcolor: '#0d0d0d', border: `1px solid ${BORDER}`, textAlign: 'center' }}>
+                    <Typography sx={{ fontSize: '1.8rem', fontWeight: 800, color: '#81c784' }}>{viewDetail.stats?.completedCourses || 0}</Typography>
+                    <Typography variant="caption" color="#555">Completed</Typography>
+                  </Box>
+                </Grid>
+                <Grid item xs={6} sm={4} md={2}>
+                  <Box sx={{ p: 1.5, borderRadius: 2, bgcolor: '#0d0d0d', border: `1px solid ${BORDER}`, textAlign: 'center' }}>
+                    <Typography sx={{ fontSize: '1.8rem', fontWeight: 800, color: '#ffb74d' }}>{Math.round(viewDetail.stats?.averageScore || 0)}%</Typography>
+                    <Typography variant="caption" color="#555">Avg Score</Typography>
+                  </Box>
+                </Grid>
+                <Grid item xs={6} sm={4} md={2}>
+                  <Box sx={{ p: 1.5, borderRadius: 2, bgcolor: '#0d0d0d', border: `1px solid ${BORDER}`, textAlign: 'center' }}>
+                    <Typography sx={{ fontSize: '1.8rem', fontWeight: 800, color: '#ce93d8' }}>{Math.round((viewDetail.stats?.totalTimeSpent || 0) / 60)}m</Typography>
+                    <Typography variant="caption" color="#555">Time Spent</Typography>
+                  </Box>
+                </Grid>
+                <Grid item xs={6} sm={4} md={2}>
+                  <Box sx={{ p: 1.5, borderRadius: 2, bgcolor: '#0d0d0d', border: `1px solid ${BORDER}`, textAlign: 'center' }}>
+                    <Typography sx={{ fontSize: '1.8rem', fontWeight: 800, color: '#4db6ac' }}>{viewDetail.stats?.completedTodos || 0}/{viewDetail.stats?.totalTodos || 0}</Typography>
+                    <Typography variant="caption" color="#555">Todos</Typography>
+                  </Box>
+                </Grid>
+                <Grid item xs={6} sm={4} md={2}>
+                  <Box sx={{ p: 1.5, borderRadius: 2, bgcolor: '#0d0d0d', border: `1px solid ${BORDER}`, textAlign: 'center' }}>
+                    <Typography sx={{ fontSize: '1.8rem', fontWeight: 800, color: '#f48fb1' }}>{viewDetail.stats?.totalExams || 0}</Typography>
+                    <Typography variant="caption" color="#555">Exams</Typography>
+                  </Box>
+                </Grid>
+              </Grid>
+
+              <Grid container spacing={3}>
+                {/* Left Column */}
+                <Grid item xs={12} md={6}>
+                  {/* Enrolled Courses */}
+                  <Typography sx={{ color: '#555', fontSize: '0.75rem', fontWeight: 700, mb: 1, textTransform: 'uppercase' }}>Enrolled Courses ({viewDetail.enrolledCourses?.length || 0})</Typography>
+                  {viewDetail.enrolledCourses?.length > 0 ? (
+                    <Box sx={{ mb: 3, maxHeight: 220, overflow: 'auto' }}>
+                      {viewDetail.enrolledCourses.map((c: any) => (
+                        <Box key={c._id} sx={{ display: 'flex', alignItems: 'center', gap: 2, p: 1.5, mb: 1, borderRadius: 1, bgcolor: '#0a0a0a', border: `1px solid ${BORDER}` }}>
+                          <Box sx={{ width: 36, height: 36, borderRadius: 1, bgcolor: '#1a1a1a', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                            <MenuBook sx={{ fontSize: 16, color: ACCENT }} />
+                          </Box>
+                          <Box sx={{ flex: 1, minWidth: 0 }}>
+                            <Typography sx={{ fontSize: '0.85rem', fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{c.courseId?.title || 'Unknown Course'}</Typography>
+                            <Typography variant="caption" color="#555">{c.courseId?.category}</Typography>
+                          </Box>
+                          <Typography sx={{ fontSize: '0.8rem', fontWeight: 600, color: c.completed ? '#81c784' : ACCENT }}>
+                            {c.completed ? '✓ Completed' : `${Math.round(c.score || 0)}%`}
+                          </Typography>
+                        </Box>
+                      ))}
+                    </Box>
+                  ) : (
+                    <Typography variant="body2" color="#444" sx={{ mb: 3, p: 2, bgcolor: '#0a0a0a', borderRadius: 1 }}>No courses enrolled</Typography>
+                  )}
+
+                  {/* Weak Topics */}
+                  <Typography sx={{ color: '#555', fontSize: '0.75rem', fontWeight: 700, mb: 1, textTransform: 'uppercase' }}>Weak Topics ({viewDetail.weakTopics?.length || 0})</Typography>
+                  {viewDetail.weakTopics?.length > 0 ? (
+                    <Box sx={{ mb: 3, maxHeight: 150, overflow: 'auto' }}>
+                      {viewDetail.weakTopics.map((w: any, i: number) => (
+                        <Chip key={i} label={w.topicName || w.subject} size="small" sx={{ mr: 0.5, mb: 0.5, bgcolor: w.completed ? 'rgba(129,199,132,0.12)' : 'rgba(229,115,115,0.12)', color: w.completed ? '#81c784' : '#e57373', fontSize: '0.7rem' }} />
+                      ))}
+                    </Box>
+                  ) : (
+                    <Typography variant="body2" color="#444" sx={{ mb: 3, p: 2, bgcolor: '#0a0a0a', borderRadius: 1 }}>No weak topics</Typography>
+                  )}
+
+                  {/* Recent Activity */}
+                  <Typography sx={{ color: '#555', fontSize: '0.75rem', fontWeight: 700, mb: 1, textTransform: 'uppercase' }}>Recent Activity</Typography>
+                  {viewDetail.recentActivity?.length > 0 ? (
+                    <Box sx={{ maxHeight: 180, overflow: 'auto' }}>
+                      {viewDetail.recentActivity.map((a: any, i: number) => (
+                        <Box key={i} sx={{ display: 'flex', alignItems: 'center', gap: 1.5, py: 0.75, borderBottom: `1px solid ${BORDER}` }}>
+                          {a.completed ? <CheckCircle sx={{ fontSize: 14, color: '#81c784' }} /> : <Assignment sx={{ fontSize: 14, color: '#555' }} />}
+                          <Typography sx={{ fontSize: '0.8rem', flex: 1 }}>{a.courseId?.title || 'Course'}</Typography>
+                          <Typography variant="caption" color="#555">{new Date(a.updatedAt).toLocaleDateString()}</Typography>
+                        </Box>
+                      ))}
+                    </Box>
+                  ) : (
+                    <Typography variant="body2" color="#444" sx={{ p: 2, bgcolor: '#0a0a0a', borderRadius: 1 }}>No recent activity</Typography>
+                  )}
+                </Grid>
+
+                {/* Right Column */}
+                <Grid item xs={12} md={6}>
+                  {/* Profile Info */}
+                  <Typography sx={{ color: '#555', fontSize: '0.75rem', fontWeight: 700, mb: 1, textTransform: 'uppercase' }}>Profile Info</Typography>
+                  <Box sx={{ mb: 3, p: 2, bgcolor: '#0a0a0a', borderRadius: 1, border: `1px solid ${BORDER}` }}>
+                    <Grid container spacing={2}>
+                      <Grid item xs={6}>
+                        <Typography variant="caption" color="#555">Status</Typography>
+                        <Box><Chip label={viewDetail.user?.isActive ? 'Active' : 'Blocked'} size="small" sx={{ bgcolor: viewDetail.user?.isActive ? 'rgba(129,199,132,0.1)' : 'rgba(229,115,115,0.1)', color: viewDetail.user?.isActive ? '#81c784' : '#e57373' }} /></Box>
+                      </Grid>
+                      <Grid item xs={6}>
+                        <Typography variant="caption" color="#555">Role</Typography>
+                        <Box><Chip label={viewDetail.user?.role} size="small" sx={{ bgcolor: `${roleColor[viewDetail.user?.role] || ACCENT}18`, color: roleColor[viewDetail.user?.role] || ACCENT }} /></Box>
+                      </Grid>
+                      <Grid item xs={6}>
+                        <Typography variant="caption" color="#555">Joined</Typography>
+                        <Typography variant="body2">{new Date(viewDetail.user?.createdAt).toLocaleDateString()}</Typography>
+                      </Grid>
+                      <Grid item xs={6}>
+                        <Typography variant="caption" color="#555">Onboarding</Typography>
+                        <Typography variant="body2">{viewDetail.user?.onboardingCompleted ? '✓ Completed' : 'Pending'}</Typography>
+                      </Grid>
+                      <Grid item xs={6}>
+                        <Typography variant="caption" color="#555">Phone</Typography>
+                        <Typography variant="body2">{viewDetail.user?.phone || 'Not set'}</Typography>
+                      </Grid>
+                      <Grid item xs={6}>
+                        <Typography variant="caption" color="#555">Phone Verified</Typography>
+                        <Typography variant="body2">{viewDetail.user?.phoneVerified ? '✓ Verified' : 'Not verified'}</Typography>
+                      </Grid>
+                    </Grid>
+                  </Box>
+
+                  {/* Subject Interests */}
+                  {viewDetail.user?.profile?.subjectInterests?.length > 0 && (
+                    <>
+                      <Typography sx={{ color: '#555', fontSize: '0.75rem', fontWeight: 700, mb: 1, textTransform: 'uppercase' }}>Subject Interests</Typography>
+                      <Box sx={{ mb: 3, display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                        {viewDetail.user.profile.subjectInterests.map((s: string) => (
+                          <Chip key={s} label={s} size="small" sx={{ bgcolor: `${ACCENT}12`, color: ACCENT, fontSize: '0.7rem' }} />
+                        ))}
+                      </Box>
+                    </>
+                  )}
+
+                  {/* Weak Areas */}
+                  {viewDetail.user?.profile?.weakAreas?.length > 0 && (
+                    <>
+                      <Typography sx={{ color: '#555', fontSize: '0.75rem', fontWeight: 700, mb: 1, textTransform: 'uppercase' }}>Weak Areas</Typography>
+                      <Box sx={{ mb: 3, display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                        {viewDetail.user.profile.weakAreas.map((s: string) => (
+                          <Chip key={s} label={s} size="small" sx={{ bgcolor: 'rgba(229,115,115,0.12)', color: '#e57373', fontSize: '0.7rem' }} />
+                        ))}
+                      </Box>
+                    </>
+                  )}
+
+                  {/* Learning Stats */}
+                  <Typography sx={{ color: '#555', fontSize: '0.75rem', fontWeight: 700, mb: 1, textTransform: 'uppercase' }}>Learning Preferences</Typography>
+                  <Box sx={{ p: 2, bgcolor: '#0a0a0a', borderRadius: 1, border: `1px solid ${BORDER}` }}>
+                    <Grid container spacing={2}>
+                      <Grid item xs={6}>
+                        <Typography variant="caption" color="#555">Learning Style</Typography>
+                        <Typography variant="body2" sx={{ textTransform: 'capitalize' }}>{viewDetail.user?.profile?.preferredLearningStyle || 'Not set'}</Typography>
+                      </Grid>
+                      <Grid item xs={6}>
+                        <Typography variant="caption" color="#555">Pace</Typography>
+                        <Typography variant="body2" sx={{ textTransform: 'capitalize' }}>{viewDetail.user?.profile?.pacePreference || 'Not set'}</Typography>
+                      </Grid>
+                      <Grid item xs={6}>
+                        <Typography variant="caption" color="#555">Performance</Typography>
+                        <Typography variant="body2" sx={{ textTransform: 'capitalize' }}>{viewDetail.user?.profile?.currentPerformanceLevel?.replace('_', ' ') || 'Not set'}</Typography>
+                      </Grid>
+                      <Grid item xs={6}>
+                        <Typography variant="caption" color="#555">Language</Typography>
+                        <Typography variant="body2">{viewDetail.user?.profile?.languagePreference || 'en'}</Typography>
+                      </Grid>
+                    </Grid>
+                  </Box>
+                </Grid>
+              </Grid>
             </Box>
-          ) : <Typography color="#555" textAlign="center" py={3}>No data</Typography>}
+          ) : <Typography color="#555" textAlign="center" py={8}>No data available</Typography>}
         </DialogContent>
       </Dialog>
 
