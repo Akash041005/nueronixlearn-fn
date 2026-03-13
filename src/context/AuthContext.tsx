@@ -43,7 +43,10 @@ interface AuthContextType {
     email: string,
     password: string,
     role?: string,
-    phone?: string
+    phone?: string,
+    learningPace?: 'slow' | 'moderate' | 'fast',
+    experienceLevel?: 'beginner' | 'intermediate' | 'professional',
+    subjects?: string[]
   ) => Promise<void>;
   sendOTP: (email: string) => Promise<void>;
   verifyOTPRegister: (data: { email: string; otp: string; name: string; password: string; role: string; phone?: string }) => Promise<void>;
@@ -134,7 +137,10 @@ export const AuthProvider = ({
     email: string,
     password: string,
     role: string = "student",
-    phone?: string
+    phone?: string,
+    learningPace?: 'slow' | 'moderate' | 'fast',
+    experienceLevel?: 'beginner' | 'intermediate' | 'professional',
+    subjects?: string[]
   ) => {
     const res = await api.post("/auth/register", {
       name,
@@ -142,6 +148,9 @@ export const AuthProvider = ({
       password,
       role,
       phone,
+      learningPace,
+      experienceLevel,
+      subjects,
     });
 
     localStorage.setItem("token", res.data.token);

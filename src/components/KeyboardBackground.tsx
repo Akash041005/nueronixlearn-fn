@@ -87,13 +87,13 @@ export default function KeyboardBackground({ opacity = 0.5 }: Props) {
 
       ctx.fillStyle   = 'rgba(20,25,35,0.75)';
       ctx.fill();
-      ctx.strokeStyle = 'rgba(79,195,247,0.45)';
+      ctx.strokeStyle = 'rgba(46,125,50,0.45)';
       ctx.lineWidth   = 1;
       ctx.stroke();
 
       // label
       const fontSize = k.label.length > 3 ? k.size * 0.28 : k.size * 0.42;
-      ctx.fillStyle   = 'rgba(180,220,255,0.85)';
+      ctx.fillStyle   = 'rgba(180,255,220,0.85)';
       ctx.font        = `600 ${fontSize}px "Courier New", monospace`;
       ctx.textAlign   = 'center';
       ctx.textBaseline = 'middle';

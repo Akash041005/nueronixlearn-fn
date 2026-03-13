@@ -7,7 +7,7 @@ import { useEffect, useRef } from "react";
 interface ParticlesProps {
   /** Number of particles (default 60) */
   quantity?: number;
-  /** Particle color (default #4fc3f7) */
+  /** Particle color (default #2E7D32) */
   color?: string;
   /** Max connection distance in px (default 120) */
   connectionDistance?: number;
@@ -33,7 +33,7 @@ interface Particle {
 
 export default function Particles({
   quantity = 60,
-  color = "#4fc3f7",
+  color = "#2E7D32",
   connectionDistance = 120,
   speed = 0.3,
   minSize = 1,

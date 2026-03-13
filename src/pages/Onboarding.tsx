@@ -16,10 +16,10 @@ import { AutoAwesome, Person, Psychology, EmojiEvents } from '@mui/icons-materia
 const NeonConnector = styled(StepConnector)(() => ({
   [`&.${stepConnectorClasses.alternativeLabel}`]: { top: 22 },
   [`&.${stepConnectorClasses.active}`]: {
-    [`& .${stepConnectorClasses.line}`]: { backgroundImage: 'linear-gradient(90deg, #4fc3f7 0%, #00e5ff 100%)' }
+    [`& .${stepConnectorClasses.line}`]: { backgroundImage: 'linear-gradient(90deg, #2E7D32 0%, #4CAF50 100%)' }
   },
   [`&.${stepConnectorClasses.completed}`]: {
-    [`& .${stepConnectorClasses.line}`]: { backgroundImage: 'linear-gradient(90deg, #4fc3f7 0%, #00e5ff 100%)' }
+    [`& .${stepConnectorClasses.line}`]: { backgroundImage: 'linear-gradient(90deg, #2E7D32 0%, #4CAF50 100%)' }
   },
   [`& .${stepConnectorClasses.line}`]: {
     height: 3,
@@ -59,11 +59,11 @@ const fieldSx = {
   '& .MuiOutlinedInput-root': {
     color: '#fff',
     '& fieldset': { borderColor: '#2a2a2a' },
-    '&:hover fieldset': { borderColor: '#4fc3f7' },
-    '&.Mui-focused fieldset': { borderColor: '#4fc3f7' }
+    '&:hover fieldset': { borderColor: '#2E7D32' },
+    '&.Mui-focused fieldset': { borderColor: '#2E7D32' }
   },
   '& .MuiInputLabel-root': { color: '#666' },
-  '& .MuiInputLabel-root.Mui-focused': { color: '#4fc3f7' },
+  '& .MuiInputLabel-root.Mui-focused': { color: '#2E7D32' },
   '& .MuiSvgIcon-root': { color: '#666' },
   '& .MuiSelect-icon': { color: '#666' },
   '& .MuiMenuItem-root': { color: '#fff' }
@@ -145,7 +145,7 @@ const Onboarding = () => {
         >
           <Box sx={{ textAlign: 'center', mb: 5 }}>
             <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1, mb: 1 }}>
-              <AutoAwesome sx={{ color: '#4fc3f7', fontSize: 32 }} />
+              <AutoAwesome sx={{ color: '#2E7D32', fontSize: 32 }} />
               <Typography variant="h4" sx={{ fontWeight: 800, color: '#fff', letterSpacing: '-0.5px' }}>
                 NeuronixLearn
               </Typography>
@@ -171,8 +171,8 @@ const Onboarding = () => {
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
-                        bgcolor: activeStep >= idx ? '#4fc3f7' : '#1a1a1a',
-                        border: `2px solid ${activeStep >= idx ? '#4fc3f7' : '#2a2a2a'}`,
+                        bgcolor: activeStep >= idx ? '#2E7D32' : '#1a1a1a',
+                        border: `2px solid ${activeStep >= idx ? '#2E7D32' : '#2a2a2a'}`,
                         color: activeStep >= idx ? '#000' : '#555',
                         transition: 'all 0.3s'
                       }}
@@ -182,7 +182,7 @@ const Onboarding = () => {
                   )}
                   sx={{
                     '& .MuiStepLabel-label': {
-                      color: activeStep >= idx ? '#4fc3f7' : '#555',
+                      color: activeStep >= idx ? '#2E7D32' : '#555',
                       fontWeight: activeStep === idx ? 700 : 400,
                       mt: 1
                     }
@@ -204,7 +204,7 @@ const Onboarding = () => {
               borderRadius: 2,
               bgcolor: '#1a1a1a',
               '& .MuiLinearProgress-bar': {
-                backgroundImage: 'linear-gradient(90deg, #4fc3f7 0%, #00e5ff 100%)'
+                backgroundImage: 'linear-gradient(90deg, #2E7D32 0%, #4CAF50 100%)'
               }
             }}
           />
@@ -225,10 +225,10 @@ const Onboarding = () => {
                 <LinearProgress
                   sx={{
                     bgcolor: '#1a1a1a',
-                    '& .MuiLinearProgress-bar': { bgcolor: '#4fc3f7' }
+                    '& .MuiLinearProgress-bar': { bgcolor: '#2E7D32' }
                   }}
                 />
-                <Typography variant="caption" color="#4fc3f7" sx={{ mt: 1, display: 'block', textAlign: 'center' }}>
+                <Typography variant="caption" color="#2E7D32" sx={{ mt: 1, display: 'block', textAlign: 'center' }}>
                   Setting up your personalised study plan…
                 </Typography>
               </Box>
@@ -296,7 +296,7 @@ const Onboarding = () => {
                                   key={value}
                                   label={value}
                                   size="small"
-                                  sx={{ bgcolor: 'rgba(79,195,247,0.15)', color: '#4fc3f7', borderColor: '#4fc3f7' }}
+                                  sx={{ bgcolor: 'rgba(46,125,50,0.15)', color: '#2E7D32', borderColor: '#2E7D32' }}
                                 />
                               ))}
                             </Box>
@@ -432,7 +432,7 @@ const Onboarding = () => {
                                   key={value}
                                   label={goalOptions.find(g => g.value === value)?.label || value}
                                   size="small"
-                                  sx={{ bgcolor: 'rgba(79,195,247,0.15)', color: '#4fc3f7' }}
+                                  sx={{ bgcolor: 'rgba(46,125,50,0.15)', color: '#2E7D32' }}
                                 />
                               ))}
                             </Box>
@@ -465,13 +465,13 @@ const Onboarding = () => {
                         mt: 3,
                         p: 2,
                         borderRadius: 2,
-                        bgcolor: 'rgba(79,195,247,0.06)',
-                        border: '1px solid rgba(79,195,247,0.15)'
+                        bgcolor: 'rgba(46,125,50,0.06)',
+                        border: '1px solid rgba(46,125,50,0.15)'
                       }}
                     >
                       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
-                        <AutoAwesome sx={{ color: '#4fc3f7', fontSize: 16 }} />
-                        <Typography variant="body2" color="#4fc3f7" fontWeight={600}>
+                        <AutoAwesome sx={{ color: '#2E7D32', fontSize: 16 }} />
+                        <Typography variant="body2" color="#2E7D32" fontWeight={600}>
                           Your Study Plan will be auto-generated for:
                         </Typography>
                       </Box>
@@ -481,7 +481,7 @@ const Onboarding = () => {
                             key={s}
                             label={s}
                             size="small"
-                            sx={{ bgcolor: 'rgba(79,195,247,0.12)', color: '#4fc3f7', fontSize: '0.75rem' }}
+                            sx={{ bgcolor: 'rgba(46,125,50,0.12)', color: '#2E7D32', fontSize: '0.75rem' }}
                           />
                         ))}
                       </Box>
@@ -509,11 +509,11 @@ const Onboarding = () => {
                   loading ? <CircularProgress size={16} color="inherit" /> : undefined
                 }
                 sx={{
-                  bgcolor: '#4fc3f7',
+                  bgcolor: '#2E7D32',
                   color: '#000',
                   fontWeight: 700,
                   px: 4,
-                  '&:hover': { bgcolor: '#29b6f6' },
+                  '&:hover': { bgcolor: '#1B5E20' },
                   '&:disabled': { bgcolor: '#1a1a1a', color: '#444' }
                 }}
               >

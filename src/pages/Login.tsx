@@ -31,11 +31,13 @@ const Login = () => {
       if (token) {
         const res = await fetch('/api/auth/me', { headers: { Authorization: `Bearer ${token}` } });
         const data = await res.json();
-        if (!data.user.onboardingCompleted) {
+        if (!data.user?.onboardingCompleted) {
           navigate('/onboarding');
         } else {
           navigate(data.user.role === 'teacher' ? '/teacher' : '/dashboard');
         }
+      } else {
+        navigate('/dashboard');
       }
     } catch (err: any) {
       setError(err.response?.data?.error || 'Invalid credentials');
@@ -45,7 +47,15 @@ const Login = () => {
   };
 
   return (
-    <Box sx={{ minHeight: '100vh', display: 'flex', bgcolor: 'background.default' }}>
+    <Box sx={{ 
+      minHeight: '100vh', 
+      display: 'flex', 
+      bgcolor: 'background.default',
+      overflow: 'hidden',
+      '&': {
+        overflowX: 'hidden'
+      }
+    }}>
       <SEO 
         title="Login"
         description="Sign in to your NeuronixLearn account and continue your AI-powered learning journey."
@@ -100,7 +110,17 @@ const Login = () => {
         <Typography variant="body2" color="text.secondary">© 2025 NeuronixLearn</Typography>
       </Box>
 
-      <Box sx={{ flex: { xs: 1, lg: '0 0 520px' }, display: 'flex', flexDirection: 'column', justifyContent: 'center', p: { xs: 4, md: 8 } }}>
+      <Box sx={{ 
+        flex: { xs: 1, lg: '0 0 520px' }, 
+        display: 'flex', 
+        flexDirection: 'column', 
+        justifyContent: 'center', 
+        p: { xs: 3, md: 8 },
+        overflow: 'auto',
+        '&::-webkit-scrollbar': { display: 'none' },
+        scrollbarWidth: 'none',
+        MsOverflowStyle: 'none'
+      }}>
         <Box sx={{ maxWidth: 400, width: '100%', mx: 'auto' }}>
           <Box sx={{ display: { xs: 'flex', lg: 'none' }, mb: 5, alignItems: 'center', gap: 1.5 }}>
             <Box sx={{ width: 36, height: 36, borderRadius: '9px', background: ACCENT, overflow: 'hidden' }}>

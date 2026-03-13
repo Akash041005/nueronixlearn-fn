@@ -2,7 +2,8 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import {
   Box, Typography, TextField, Button, Alert, CircularProgress,
-  alpha, useTheme, ToggleButton, ToggleButtonGroup, InputAdornment, IconButton
+  alpha, useTheme, ToggleButton, ToggleButtonGroup, InputAdornment, IconButton,
+  Chip, FormControl, InputLabel, Select, MenuItem, OutlinedInput, SelectChangeEvent
 } from '@mui/material';
 import { ArrowForward, School, Person, Visibility, VisibilityOff, PhoneAndroid } from '@mui/icons-material';
 import { useAuth } from '../context/AuthContext';
@@ -10,12 +11,38 @@ import SEO from '../components/SEO';
 
 const ACCENT = '#2E7D32';
 
+const SUBJECTS = [
+  'Computer Science',
+  'Cyber Security',
+  'Web Development',
+  'Artificial Intelligence',
+  'Machine Learning',
+  'Data Science',
+  'Mobile Development',
+  'Cloud Computing',
+  'DevOps',
+  'Blockchain',
+  'Quantum Computing',
+  'Mathematics',
+  'Physics',
+  'Chemistry',
+  'Biology',
+  'Economics',
+  'Business Studies',
+  'English',
+  'History',
+  'Geography'
+];
+
 const Register = () => {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [phone, setPhone] = useState('');
   const [role, setRole] = useState('student');
+  const [learningPace, setLearningPace] = useState<'slow' | 'moderate' | 'fast'>('moderate');
+  const [experienceLevel, setExperienceLevel] = useState<'beginner' | 'intermediate' | 'professional'>('beginner');
+  const [subjects, setSubjects] = useState<string[]>([]);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
@@ -24,12 +51,21 @@ const Register = () => {
   const theme = useTheme();
   const isDark = theme.palette.mode === 'dark';
 
+  const handleSubjectChange = (event: SelectChangeEvent<typeof subjects>) => {
+    const {
+      target: { value },
+    } = event;
+    setSubjects(
+      typeof value === 'string' ? value.split(',') : value,
+    );
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
     setLoading(true);
     try {
-      await register(name, email, password, role, phone);
+      await register(name, email, password, role, phone, learningPace, experienceLevel, subjects);
     } catch (err: any) {
       setError(err.response?.data?.error || 'Registration failed');
     } finally {
@@ -38,7 +74,12 @@ const Register = () => {
   };
 
   return (
-    <Box sx={{ minHeight: '100vh', display: 'flex', bgcolor: 'background.default' }}>
+    <Box sx={{ 
+      minHeight: '100vh', 
+      display: 'flex', 
+      bgcolor: 'background.default',
+      overflow: 'hidden'
+    }}>
       <SEO 
         title="Create Account"
         description="Join NeuronixLearn for free. Start your AI-powered personalized learning journey today."
@@ -94,8 +135,8 @@ const Register = () => {
         <Typography variant="body2" color="text.secondary">© 2025 NeuronixLearn</Typography>
       </Box>
 
-      <Box sx={{ flex: { xs: 1, lg: '0 0 520px' }, display: 'flex', flexDirection: 'column', justifyContent: 'center', p: { xs: 4, md: 8 } }}>
-        <Box sx={{ maxWidth: 420, width: '100%', mx: 'auto' }}>
+      <Box sx={{ flex: { xs: 1, lg: '0 0 580px' }, display: 'flex', flexDirection: 'column', justifyContent: 'center', p: { xs: 3, md: 8 }, overflow: 'auto', '&::-webkit-scrollbar': { display: 'none' }, scrollbarWidth: 'none', MsOverflowStyle: 'none' }}>
+        <Box sx={{ maxWidth: 480, width: '100%', mx: 'auto' }}>
           <Box sx={{ display: { xs: 'flex', lg: 'none' }, mb: 4, alignItems: 'center', gap: 1.5 }}>
             <Box sx={{ width: 36, height: 36, borderRadius: '9px', background: ACCENT, overflow: 'hidden' }}>
               <Box component="img" src="/logo.jpg" alt="Logo" sx={{ width: '100%', height: '100%', objectFit: 'cover' }} />
@@ -143,6 +184,54 @@ const Register = () => {
                   <ToggleButton value="teacher"><Person sx={{ mr: 1 }} /> Teach</ToggleButton>
                 </ToggleButtonGroup>
               </Box>
+
+              {role === 'student' && (
+                <>
+                  <Box>
+                    <Typography variant="body2" sx={{ mb: 1.5, fontWeight: 500, color: 'text.secondary' }}>Learning Pace:</Typography>
+                    <ToggleButtonGroup value={learningPace} exclusive onChange={(_, val) => val && setLearningPace(val)} fullWidth
+                      sx={{ '& .MuiToggleButton-root': { py: 1, borderRadius: '10px !important' } }}>
+                      <ToggleButton value="slow">Slow</ToggleButton>
+                      <ToggleButton value="moderate">Moderate</ToggleButton>
+                      <ToggleButton value="fast">Fast</ToggleButton>
+                    </ToggleButtonGroup>
+                  </Box>
+
+                  <Box>
+                    <Typography variant="body2" sx={{ mb: 1.5, fontWeight: 500, color: 'text.secondary' }}>Experience Level:</Typography>
+                    <ToggleButtonGroup value={experienceLevel} exclusive onChange={(_, val) => val && setExperienceLevel(val)} fullWidth
+                      sx={{ '& .MuiToggleButton-root': { py: 1, borderRadius: '10px !important' } }}>
+                      <ToggleButton value="beginner">Beginner</ToggleButton>
+                      <ToggleButton value="intermediate">Intermediate</ToggleButton>
+                      <ToggleButton value="professional">Professional</ToggleButton>
+                    </ToggleButtonGroup>
+                  </Box>
+
+                  <FormControl fullWidth>
+                    <InputLabel sx={{ bgcolor: isDark ? '#0a0a0f' : '#fff', px: 1 }}>Subjects to Learn</InputLabel>
+                    <Select
+                      multiple
+                      value={subjects}
+                      onChange={handleSubjectChange}
+                      input={<OutlinedInput label="Subjects to Learn" />}
+                      renderValue={(selected) => (
+                        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                          {selected.map((value) => (
+                            <Chip key={value} label={value} size="small" sx={{ bgcolor: `${ACCENT}20`, color: ACCENT }} />
+                          ))}
+                        </Box>
+                      )}
+                      sx={{ '& .MuiOutlinedInput-root': { borderRadius: '10px' } }}
+                    >
+                      {SUBJECTS.map((subject) => (
+                        <MenuItem key={subject} value={subject}>
+                          {subject}
+                        </MenuItem>
+                      ))}
+                    </Select>
+                  </FormControl>
+                </>
+              )}
 
               <Button fullWidth variant="contained" type="submit" size="large" disabled={loading}
                 sx={{ py: 1.5, borderRadius: '10px', fontWeight: 600, boxShadow: `0 4px 20px ${alpha(ACCENT, 0.3)}` }}>

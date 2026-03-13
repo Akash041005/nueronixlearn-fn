@@ -45,10 +45,12 @@ import {
   Bolt,
   ArrowForwardIos,
   InfoOutlined,
+  OndemandVideo,
+  Slideshow,
 } from "@mui/icons-material";
 
 import { motion, AnimatePresence } from "framer-motion";
-import { topicsAPI } from "../services/api";
+import { topicsAPI, aiAPI } from "../services/api";
 import PageBackground from "../components/PageBackground";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -144,6 +146,13 @@ export default function StudyPlan() {
   const [completingTopic,    setCompletingTopic]    = useState(false);
   const [completingSubtopic, setCompletingSubtopic] = useState(false);
   const [deletingId,         setDeletingId]         = useState<string | null>(null);
+
+  // AI Slides/Video state
+  const [aiSlides, setAiSlides] = useState<any[]>([]);
+  const [generatingSlides, setGeneratingSlides] = useState(false);
+  const [generatingVideo, setGeneratingVideo] = useState(false);
+  const [videoContent, setVideoContent] = useState<any>(null);
+  const [slidesDialogOpen, setSlidesDialogOpen] = useState(false);
 
   // Track the "active fetch" so a stale async can be cancelled
   const subtopicFetchRef = useRef<number>(0);
@@ -450,12 +459,50 @@ export default function StudyPlan() {
     handleSelectTopic(nextTopic);
   }, [nextTopic, handleSelectTopic]);
 
+  const handleGenerateSlides = async () => {
+    if (!selectedTopic || !selectedSubject) return;
+    setGeneratingSlides(true);
+    try {
+      const res = await aiAPI.generateSlides(selectedTopic.topicTitle, selectedSubject.subject);
+      setAiSlides(res.data.slides || []);
+      setSlidesDialogOpen(true);
+    } catch (err) {
+      console.error('Failed to generate slides:', err);
+    } finally {
+      setGeneratingSlides(false);
+    }
+  };
+
+  const handleGenerateVideo = async () => {
+    if (!selectedTopic || !selectedSubject) return;
+    setGeneratingVideo(true);
+    setVideoContent(null);
+    try {
+      const res = await aiAPI.generateVideo(selectedTopic.topicTitle, selectedSubject.subject);
+      setVideoContent(res.data);
+    } catch (err: any) {
+      console.error('Failed to generate video:', err);
+      setVideoContent({
+        success: false,
+        error: err.response?.data?.error || 'Failed to generate video',
+        script: {
+          intro: 'Video generation is currently unavailable.',
+          mainContent: 'Please try again later or use the slides feature instead.',
+          example: 'You can also ask the AI chatbot for help.',
+          summary: 'Thank you for your patience.'
+        }
+      });
+    } finally {
+      setGeneratingVideo(false);
+    }
+  };
+
   // ─── Page loading ──────────────────────────────────────────────────────────
 
   if (pageLoading) {
     return (
       <Box sx={{ bgcolor: "#0a0a0a", minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center" }}>
-        <CircularProgress sx={{ color: "#4fc3f7" }} size={36} />
+        <CircularProgress sx={{ color: "#2E7D32" }} size={36} />
       </Box>
     );
   }
@@ -483,10 +530,10 @@ export default function StudyPlan() {
                       <LinearProgress
                         variant="determinate"
                         value={topicPct}
-                        sx={{ height: 3, borderRadius: 2, bgcolor: "#1a1a1a", "& .MuiLinearProgress-bar": { bgcolor: "#4fc3f7" } }}
+                        sx={{ height: 3, borderRadius: 2, bgcolor: "#1a1a1a", "& .MuiLinearProgress-bar": { bgcolor: "#2E7D32" } }}
                       />
                     </Box>
-                    <Typography variant="caption" sx={{ color: "#4fc3f7", minWidth: 36 }}>
+                    <Typography variant="caption" sx={{ color: "#2E7D32", minWidth: 36 }}>
                       {topicPct}%
                     </Typography>
                   </Box>
@@ -502,8 +549,8 @@ export default function StudyPlan() {
               startIcon={<Add />}
               onClick={() => setDialogOpen(true)}
               sx={{
-                bgcolor: "#4fc3f7", color: "#000", fontWeight: 700, px: 2.5,
-                "&:hover": { bgcolor: "#29b6f6" },
+                bgcolor: "#2E7D32", color: "#000", fontWeight: 700, px: 2.5,
+                "&:hover": { bgcolor: "#1B5E20" },
               }}
             >
               Add Subject
@@ -518,7 +565,7 @@ export default function StudyPlan() {
               <Alert
                 severity="info"
                 icon={<Bolt sx={{ fontSize: 18 }} />}
-                sx={{ mb: 2, bgcolor: "rgba(79,195,247,0.08)", color: "#4fc3f7", border: "1px solid rgba(79,195,247,0.15)", borderRadius: 2 }}
+                sx={{ mb: 2, bgcolor: "rgba(46,125,50,0.08)", color: "#2E7D32", border: "1px solid rgba(46,125,50,0.15)", borderRadius: 2 }}
               >
                 Generating AI roadmap for <strong style={{ textTransform: "capitalize" }}>{selectedSubject?.subject}</strong> — this takes a few seconds.
               </Alert>
@@ -556,7 +603,7 @@ export default function StudyPlan() {
                       <Button
                         variant="outlined" size="small" startIcon={<Add />}
                         onClick={() => setDialogOpen(true)}
-                        sx={{ color: "#4fc3f7", borderColor: "#4fc3f7" }}
+                        sx={{ color: "#2E7D32", borderColor: "#2E7D32" }}
                       >
                         Add Subject
                       </Button>
@@ -591,13 +638,13 @@ export default function StudyPlan() {
                                 sx={{
                                   borderRadius: 1.5, pr: 5,
                                   "&.Mui-selected": {
-                                    bgcolor: "rgba(79,195,247,0.1)",
-                                    "&:hover": { bgcolor: "rgba(79,195,247,0.16)" },
+                                    bgcolor: "rgba(46,125,50,0.1)",
+                                    "&:hover": { bgcolor: "rgba(46,125,50,0.16)" },
                                   },
                                 }}
                               >
                                 <ListItemIcon sx={{ minWidth: 28 }}>
-                                  <ChevronRight sx={{ fontSize: 16, color: selected ? "#4fc3f7" : "#444" }} />
+                                  <ChevronRight sx={{ fontSize: 16, color: selected ? "#2E7D32" : "#444" }} />
                                 </ListItemIcon>
                                 <ListItemText
                                   primary={sub.subject}
@@ -755,8 +802,8 @@ export default function StudyPlan() {
                           endIcon={<ArrowForwardIos sx={{ fontSize: 12 }} />}
                           onClick={handleNextTopic}
                           sx={{
-                            bgcolor: "#4fc3f7", color: "#000", fontWeight: 700, fontSize: "0.75rem",
-                            "&:hover": { bgcolor: "#29b6f6" },
+                            bgcolor: "#2E7D32", color: "#000", fontWeight: 700, fontSize: "0.75rem",
+                            "&:hover": { bgcolor: "#1B5E20" },
                           }}
                         >
                           Next: {nextTopic.topicTitle}
@@ -836,7 +883,7 @@ export default function StudyPlan() {
                           fullWidth size="small" variant="outlined"
                           endIcon={<ArrowForwardIos sx={{ fontSize: 11 }} />}
                           onClick={handleNextTopic}
-                          sx={{ mt: 1, color: "#4fc3f7", borderColor: "rgba(79,195,247,0.4)", fontSize: "0.72rem", "&:hover": { bgcolor: "rgba(79,195,247,0.07)" } }}
+                          sx={{ mt: 1, color: "#2E7D32", borderColor: "rgba(46,125,50,0.4)", fontSize: "0.72rem", "&:hover": { bgcolor: "rgba(46,125,50,0.07)" } }}
                         >
                           Next: {nextTopic.topicTitle}
                         </Button>
@@ -865,7 +912,41 @@ export default function StudyPlan() {
                         </Typography>
                       )}
                     </Box>
-                    <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                    <Box sx={{ display: "flex", alignItems: "center", gap: 1, flexWrap: "wrap" }}>
+                      {selectedTopic && (
+                        <>
+                          <Tooltip title="Generate AI Slides" placement="left">
+                            <Button
+                              size="small" variant="outlined"
+                              startIcon={generatingSlides ? <CircularProgress size={12} /> : <Slideshow sx={{ fontSize: 14 }} />}
+                              onClick={handleGenerateSlides}
+                              disabled={generatingSlides}
+                              sx={{
+                                color: "#4DFFA3", borderColor: "rgba(77,255,163,0.3)",
+                                fontSize: "0.65rem", py: 0.2, px: 1,
+                                "&:hover": { bgcolor: "rgba(77,255,163,0.07)" },
+                              }}
+                            >
+                              Slides
+                            </Button>
+                          </Tooltip>
+                          <Tooltip title="Generate AI Video Content" placement="left">
+                            <Button
+                              size="small" variant="outlined"
+                              startIcon={generatingVideo ? <CircularProgress size={12} /> : <OndemandVideo sx={{ fontSize: 14 }} />}
+                              onClick={handleGenerateVideo}
+                              disabled={generatingVideo}
+                              sx={{
+                                color: "#4DFFA3", borderColor: "rgba(77,255,163,0.3)",
+                                fontSize: "0.65rem", py: 0.2, px: 1,
+                                "&:hover": { bgcolor: "rgba(77,255,163,0.07)" },
+                              }}
+                            >
+                              Video
+                            </Button>
+                          </Tooltip>
+                        </>
+                      )}
                       {nextTopic && (
                         <Tooltip title={`Go to: ${nextTopic.topicTitle}`} placement="left">
                           <Button
@@ -873,9 +954,9 @@ export default function StudyPlan() {
                             endIcon={<ArrowForwardIos sx={{ fontSize: 10 }} />}
                             onClick={handleNextTopic}
                             sx={{
-                              color: "#4fc3f7", borderColor: "rgba(79,195,247,0.3)",
+                              color: "#2E7D32", borderColor: "rgba(46,125,50,0.3)",
                               fontSize: "0.68rem", py: 0.3, px: 1,
-                              "&:hover": { bgcolor: "rgba(79,195,247,0.07)" },
+                              "&:hover": { bgcolor: "rgba(46,125,50,0.07)" },
                             }}
                           >
                             Next topic
@@ -977,8 +1058,8 @@ export default function StudyPlan() {
                       <motion.div key="blogs" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.2 }}>
                         <Box>
                           <Box sx={{ display: "flex", alignItems: "center", gap: 0.75, mb: 1.5 }}>
-                            <MenuBook sx={{ fontSize: 15, color: "#64b5f6" }} />
-                            <Typography variant="caption" sx={{ color: "#64b5f6", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.06em", fontSize: "0.7rem" }}>
+                            <MenuBook sx={{ fontSize: 15, color: "#2E7D32" }} />
+                            <Typography variant="caption" sx={{ color: "#2E7D32", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.06em", fontSize: "0.7rem" }}>
                               Articles ({resources.blogs.length})
                             </Typography>
                           </Box>
@@ -988,7 +1069,7 @@ export default function StudyPlan() {
                                 <motion.div variants={fade} initial="hidden" animate="visible" transition={{ delay: idx * 0.06 }}>
                                   <Card
                                     onClick={() => window.open(blog.url, "_blank")}
-                                    sx={{ bgcolor: "#141414", cursor: "pointer", border: "1px solid #1e1e1e", borderRadius: 2, transition: "border-color 0.15s", "&:hover": { borderColor: "#64b5f6" } }}
+                                    sx={{ bgcolor: "#141414", cursor: "pointer", border: "1px solid #1e1e1e", borderRadius: 2, transition: "border-color 0.15s", "&:hover": { borderColor: "#2E7D32" } }}
                                   >
                                     <CardActionArea>
                                       <CardContent sx={{ py: "10px !important", px: "12px !important" }}>
@@ -998,7 +1079,7 @@ export default function StudyPlan() {
                                         <Box sx={{ display: "flex", alignItems: "center", gap: 0.75, flexWrap: "wrap" }}>
                                           <Chip
                                             label={blog.source} size="small"
-                                            sx={{ bgcolor: "rgba(100,181,246,0.15)", color: "#64b5f6", fontSize: "0.62rem", height: 17, border: "none" }}
+                                            sx={{ bgcolor: "rgba(100,181,246,0.15)", color: "#2E7D32", fontSize: "0.62rem", height: 17, border: "none" }}
                                           />
                                           {blog.description && (
                                             <Typography variant="caption" sx={{ color: "#444", fontSize: "0.7rem" }}>
@@ -1035,7 +1116,7 @@ export default function StudyPlan() {
       >
         <DialogTitle sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", pb: 1 }}>
           <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-            <School sx={{ color: "#4fc3f7", fontSize: 20 }} />
+            <School sx={{ color: "#2E7D32", fontSize: 20 }} />
             <Typography fontWeight={700}>Add New Subject</Typography>
           </Box>
           <IconButton onClick={() => setDialogOpen(false)} disabled={addingSubject} sx={{ color: "#444" }}>
@@ -1066,7 +1147,7 @@ export default function StudyPlan() {
             value={newSubject}
             onChange={(e) => { setNewSubject(e.target.value); setPopularPick(null); }}
             onKeyDown={(e) => e.key === "Enter" && (newSubject || popularPick) && handleAddSubject()}
-            placeholder="e.g., System Design, Rust, Computer Networks"
+            placeholder="Enter your custom subject here"
             sx={{ ...dialogFieldSx, mb: 1 }}
           />
 
@@ -1086,9 +1167,143 @@ export default function StudyPlan() {
             onClick={handleAddSubject}
             disabled={addingSubject || (!newSubject && !popularPick)}
             startIcon={addingSubject ? <CircularProgress size={15} color="inherit" /> : <Bolt sx={{ fontSize: 16 }} />}
-            sx={{ bgcolor: "#4fc3f7", color: "#000", fontWeight: 700, "&:hover": { bgcolor: "#29b6f6" }, "&:disabled": { bgcolor: "#1a1a1a", color: "#444" } }}
+            sx={{ bgcolor: "#2E7D32", color: "#000", fontWeight: 700, "&:hover": { bgcolor: "#1B5E20" }, "&:disabled": { bgcolor: "#1a1a1a", color: "#444" } }}
           >
             {addingSubject ? "Generating roadmap…" : "Generate roadmap"}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* ── AI Slides Dialog ── */}
+      <Dialog
+        open={slidesDialogOpen}
+        onClose={() => setSlidesDialogOpen(false)}
+        maxWidth="md" fullWidth
+        PaperProps={{ sx: { bgcolor: "#111", color: "#fff", border: "1px solid #1e1e1e", borderRadius: 3 } }}
+      >
+        <DialogTitle sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", pb: 1 }}>
+          <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+            <Slideshow sx={{ color: "#4DFFA3", fontSize: 20 }} />
+            <Typography fontWeight={700}>AI Generated Slides</Typography>
+          </Box>
+          <IconButton onClick={() => setSlidesDialogOpen(false)} sx={{ color: "#444" }}>
+            <Close fontSize="small" />
+          </IconButton>
+        </DialogTitle>
+        <DialogContent sx={{ pt: 2 }}>
+          {aiSlides.length > 0 ? (
+            <Grid container spacing={2}>
+              {aiSlides.map((slide, idx) => (
+                <Grid item xs={12} key={idx}>
+                  <Card sx={{ bgcolor: "#1a1a1a", border: "1px solid #2a2a2a", borderRadius: 2 }}>
+                    <CardContent>
+                      <Chip 
+                        label={slide.type} 
+                        size="small" 
+                        sx={{ 
+                          mb: 1, 
+                          bgcolor: slide.type === 'title' ? 'rgba(77,255,163,0.2)' : 
+                                   slide.type === 'diagram' ? 'rgba(229,115,115,0.2)' : 
+                                   'rgba(255,183,77,0.2)',
+                          color: slide.type === 'title' ? '#4DFFA3' : 
+                                 slide.type === 'diagram' ? '#e57373' : '#ffb74d',
+                          fontSize: '0.7rem' 
+                        }} 
+                      />
+                      <Typography variant="body1" sx={{ color: "#fff", fontSize: "0.95rem", lineHeight: 1.6 }}>
+                        {slide.content}
+                      </Typography>
+                      {slide.imageUrl && (
+                        <Box sx={{ mt: 2 }}>
+                          <Typography variant="caption" sx={{ color: "#666", display: "block", mb: 1 }}>
+                            Diagram:
+                          </Typography>
+                          <CardMedia
+                            component="img"
+                            image={slide.imageUrl}
+                            alt={slide.content}
+                            sx={{ borderRadius: 2, maxHeight: 200, objectFit: "contain", bgcolor: "#000" }}
+                          />
+                        </Box>
+                      )}
+                    </CardContent>
+                  </Card>
+                </Grid>
+              ))}
+            </Grid>
+          ) : (
+            <Box sx={{ textAlign: "center", py: 4 }}>
+              <Typography color="#666">No slides generated yet. Select a topic and click "Slides" to generate.</Typography>
+            </Box>
+          )}
+          
+          {videoContent && (
+            <Box sx={{ mt: 3, p: 2, bgcolor: "rgba(77,255,163,0.1)", borderRadius: 2, border: "1px solid rgba(77,255,163,0.2)" }}>
+              <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 2 }}>
+                <OndemandVideo sx={{ color: "#4DFFA3" }} />
+                <Typography fontWeight={600} sx={{ color: "#4DFFA3" }}>
+                  {videoContent.videoUrl ? "AI Video Generated!" : "AI Video Script"}
+                </Typography>
+                {videoContent.cached && (
+                  <Chip label="Cached" size="small" sx={{ bgcolor: "rgba(255,183,77,0.2)", color: "#ffb74d", fontSize: "0.65rem" }} />
+                )}
+              </Box>
+              
+              {videoContent.message && (
+                <Alert severity="info" sx={{ mb: 2, bgcolor: "rgba(33,150,243,0.1)", color: "#64b5f6" }}>
+                  {videoContent.message}
+                </Alert>
+              )}
+              
+              <Typography variant="body2" sx={{ color: "#ccc", mb: 2, fontSize: "0.85rem" }}>
+                <strong>Introduction:</strong> {videoContent.script?.intro}
+              </Typography>
+              <Typography variant="body2" sx={{ color: "#ccc", mb: 2, fontSize: "0.85rem" }}>
+                <strong>Main Content:</strong> {videoContent.script?.mainContent}
+              </Typography>
+              <Typography variant="body2" sx={{ color: "#ccc", mb: 2, fontSize: "0.85rem" }}>
+                <strong>Example:</strong> {videoContent.script?.example}
+              </Typography>
+              <Typography variant="body2" sx={{ color: "#ccc", mb: 2, fontSize: "0.85rem" }}>
+                <strong>Summary:</strong> {videoContent.script?.summary}
+              </Typography>
+              
+              {videoContent.videoUrl && (
+                <Box sx={{ mt: 2 }}>
+                  <Typography variant="caption" sx={{ color: "#4DFFA3", display: "block", mb: 1 }}>
+                    Generated Video:
+                  </Typography>
+                  <Box sx={{ borderRadius: 2, overflow: "hidden", bgcolor: "#000" }}>
+                    <video
+                      controls
+                      style={{ width: "100%", maxHeight: 300 }}
+                      src={videoContent.videoUrl}
+                    >
+                      Your browser does not support video playback.
+                    </video>
+                  </Box>
+                </Box>
+              )}
+              
+              {!videoContent.videoUrl && videoContent.slideImageUrl && (
+                <Box sx={{ mt: 2 }}>
+                  <Typography variant="caption" sx={{ color: "#666", display: "block", mb: 1 }}>
+                    Slide Image:
+                  </Typography>
+                  <CardMedia
+                    component="img"
+                    image={videoContent.slideImageUrl}
+                    alt="Video slide"
+                    sx={{ borderRadius: 2, maxHeight: 200, objectFit: "contain", bgcolor: "#000" }}
+                  />
+                </Box>
+              )}
+            </Box>
+          )}
+        </DialogContent>
+        <DialogActions sx={{ p: 3, pt: 1 }}>
+          <Button onClick={() => setSlidesDialogOpen(false)} sx={{ color: "#555" }}>
+            Close
           </Button>
         </DialogActions>
       </Dialog>
@@ -1099,7 +1314,7 @@ export default function StudyPlan() {
 
 // ─── Shared sub-components ────────────────────────────────────────────────────
 
-function SectionHeader({ label, accent = "#4fc3f7" }: { label: string; accent?: string }) {
+function SectionHeader({ label, accent = "#2E7D32" }: { label: string; accent?: string }) {
   return (
     <Typography variant="subtitle2" sx={{ color: accent, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.07em", fontSize: "0.7rem", mb: 0 }}>
       {label}
@@ -1107,7 +1322,7 @@ function SectionHeader({ label, accent = "#4fc3f7" }: { label: string; accent?: 
   );
 }
 
-function LoadingState({ label, color = "#4fc3f7" }: { label: string; color?: string }) {
+function LoadingState({ label, color = "#2E7D32" }: { label: string; color?: string }) {
   return (
     <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center", py: 5, gap: 1.5 }}>
       <CircularProgress size={24} sx={{ color }} />
@@ -1144,8 +1359,8 @@ const dialogFieldSx = {
   "& .MuiOutlinedInput-root": {
     color: "#fff",
     "& fieldset": { borderColor: "#2a2a2a" },
-    "&:hover fieldset": { borderColor: "#4fc3f7" },
-    "&.Mui-focused fieldset": { borderColor: "#4fc3f7" },
+    "&:hover fieldset": { borderColor: "#2E7D32" },
+    "&.Mui-focused fieldset": { borderColor: "#2E7D32" },
   },
   "& .MuiInputLabel-root": { color: "#555" },
   "& .MuiSvgIcon-root": { color: "#555" },

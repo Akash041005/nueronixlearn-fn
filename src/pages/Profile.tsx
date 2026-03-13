@@ -8,7 +8,7 @@ import { motion } from 'framer-motion';
 import { useAuth } from '../context/AuthContext';
 import { authAPI, analyticsAPI } from '../services/api';
 
-const ACCENT  = '#4fc3f7';
+const ACCENT  = '#2E7D32';
 const cardSx  = { bgcolor: '#111', border: '1px solid #1a1a1a', borderRadius: 3 };
 const fieldSx = {
   '& .MuiOutlinedInput-root': {
@@ -168,7 +168,7 @@ export default function Profile() {
                           position: 'absolute', bottom: 2, right: 2,
                           bgcolor: ACCENT, color: '#000',
                           width: 30, height: 30,
-                          '&:hover': { bgcolor: '#29b6f6' },
+                          '&:hover': { bgcolor: '#1B5E20' },
                           border: '2px solid #0a0a0a',
                         }}
                       >
@@ -315,7 +315,7 @@ export default function Profile() {
                     disabled={saving}
                     sx={{
                       mt: 3, bgcolor: ACCENT, color: '#000', fontWeight: 700,
-                      '&:hover': { bgcolor: '#29b6f6' },
+                      '&:hover': { bgcolor: '#1B5E20' },
                       '&:disabled': { bgcolor: '#1a1a1a', color: '#444' },
                     }}
                   >

@@ -115,7 +115,7 @@ function MagBtn({
           transition: 'all 0.2s ease',
           ...(variant === 'contained' ? {
             bgcolor: accent, color: '#fff',
-            '&:hover': { bgcolor: mode === 'dark' ? '#29b6f6' : '#01579b', boxShadow: 'none' },
+            '&:hover': { bgcolor: mode === 'dark' ? '#1B5E20' : '#1B5E20', boxShadow: 'none' },
           } : {
             borderColor: `${accent}66`, color: accent,
             '&:hover': { borderColor: accent, bgcolor: `${accent}0d`, boxShadow: 'none' },

@@ -56,11 +56,16 @@
     <style>
       *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
       html { scroll-behavior: smooth; font-size: 16px; }
-      body { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
+      body { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; overflow-x: hidden; }
+      #root { min-height: 100vh; }
       ::selection { background: rgba(46, 125, 50, 0.3); }
       ::-webkit-scrollbar { width: 8px; }
       ::-webkit-scrollbar-track { background: transparent; }
       ::-webkit-scrollbar-thumb { background: rgba(46, 125, 50, 0.4); border-radius: 4px; }
+      @media (max-width: 768px) {
+        html, body { overflow-x: hidden; overflow-y: auto; }
+        #root { overflow: hidden; }
+      }
     </style>
     
     <!-- Structured Data -->
@@ -86,10 +91,10 @@
       }
     }
     </script>
-    <script type="module" crossorigin src="/assets/index-ClqBzeh8.js"></script>
+    <script type="module" crossorigin src="/assets/index-C51UmXSC.js"></script>
     <link rel="modulepreload" crossorigin href="/assets/vendor-BJXgUgde.js">
-    <link rel="modulepreload" crossorigin href="/assets/mui-DJRtiRrw.js">
-    <link rel="modulepreload" crossorigin href="/assets/charts-DLzqkVKc.js">
+    <link rel="modulepreload" crossorigin href="/assets/mui-D6xzoZHJ.js">
+    <link rel="modulepreload" crossorigin href="/assets/charts-OF1HdjxU.js">
   <link rel="manifest" href="/manifest.webmanifest"><script id="vite-plugin-pwa:register-sw" src="/registerSW.js"></script></head>
   <body>
     <div id="root"></div>

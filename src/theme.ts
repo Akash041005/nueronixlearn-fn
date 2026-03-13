@@ -20,7 +20,7 @@ const getDesignTokens = (mode: 'light' | 'dark'): ThemeOptions => ({
     },
     error: { main: '#D32F2F' },
     warning: { main: '#F57C00' },
-    info: { main: '#0288D1' },
+    info: { main: '#2E7D32' },
     success: { main: GREEN_ACCENT },
     ...(mode === 'dark'
       ? {
@@ -65,7 +65,15 @@ const getDesignTokens = (mode: 'light' | 'dark'): ThemeOptions => ({
           scrollbarColor: `${mode === 'dark' ? '#333' : '#ccc'} ${mode === 'dark' ? '#000' : '#f0f0f0'}`,
           '&::-webkit-scrollbar': { width: '8px' },
           '&::-webkit-scrollbar-track': { background: mode === 'dark' ? '#0A0A0A' : '#f0f0f0' },
-          '&::-webkit-scrollbar-thumb': { background: mode === 'dark' ? '#333' : '#ccc', borderRadius: '4px' }
+          '&::-webkit-scrollbar-thumb': { background: mode === 'dark' ? '#333' : '#ccc', borderRadius: '4px' },
+          '@media (max-width: 768px)': {
+            overflowX: 'hidden',
+          }
+        },
+        '*': {
+          '@media (max-width: 768px)': {
+            overflowX: 'hidden !important'
+          }
         }
       }
     },

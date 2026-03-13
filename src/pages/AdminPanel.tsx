@@ -23,7 +23,7 @@ import { adminAPI } from '../services/api';
 const BG     = '#0a0a0a';
 const CARD   = '#111';
 const BORDER = '#1a1a1a';
-const ACCENT = '#4fc3f7';
+const ACCENT = '#2E7D32';
 
 const cardSx       = { bgcolor: CARD, border: `1px solid ${BORDER}`, borderRadius: 2.5 };
 const cellSx       = { borderColor: BORDER, color: '#bbb', fontSize: '0.82rem', py: 1.2 };
@@ -323,7 +323,7 @@ export default function AdminPanel() {
                 sx={{ ...fieldSx, mb: 3 }} />
               <Button fullWidth variant="contained" onClick={handleLogin} disabled={loggingIn}
                 startIcon={loggingIn ? <CircularProgress size={15} color="inherit" /> : undefined}
-                sx={{ bgcolor: ACCENT, color: '#000', fontWeight: 700, '&:hover': { bgcolor: '#29b6f6' } }}>
+                sx={{ bgcolor: ACCENT, color: '#000', fontWeight: 700, '&:hover': { bgcolor: '#1B5E20' } }}>
                 {loggingIn ? 'Signing in…' : 'Sign in'}
               </Button>
             </CardContent>
@@ -669,7 +669,7 @@ export default function AdminPanel() {
                   variant="contained" 
                   startIcon={<PersonAdd sx={{ fontSize: 16 }} />}
                   onClick={() => setAddAdminDialog(true)}
-                  sx={{ bgcolor: ACCENT, color: '#000', fontWeight: 700, fontSize: '0.75rem', px: 2, '&:hover': { bgcolor: '#29b6f6' } }}
+                  sx={{ bgcolor: ACCENT, color: '#000', fontWeight: 700, fontSize: '0.75rem', px: 2, '&:hover': { bgcolor: '#1B5E20' } }}
                 >
                   Add Admin
                 </Button>
@@ -704,9 +704,9 @@ export default function AdminPanel() {
                                 label={a.isSuperAdmin ? 'Super Admin' : 'Admin'} 
                                 size="small"
                                 sx={{ 
-                                  bgcolor: a.isSuperAdmin ? 'rgba(229,115,115,0.1)' : 'rgba(79,195,247,0.1)', 
+                                  bgcolor: a.isSuperAdmin ? 'rgba(229,115,115,0.1)' : 'rgba(46,125,50,0.1)', 
                                   color: a.isSuperAdmin ? '#e57373' : ACCENT,
-                                  border: `1px solid ${a.isSuperAdmin ? 'rgba(229,115,115,0.25)' : 'rgba(79,195,247,0.25)'}`, 
+                                  border: `1px solid ${a.isSuperAdmin ? 'rgba(229,115,115,0.25)' : 'rgba(46,125,50,0.25)'}`, 
                                   fontSize: '0.68rem', height: 19 
                                 }} 
                               />
@@ -717,7 +717,7 @@ export default function AdminPanel() {
                                   <Chip label="Full Access" size="small" sx={{ bgcolor: 'rgba(229,115,115,0.1)', color: '#e57373', fontSize: '0.6rem', height: 16 }} />
                                 ) : (
                                   <>
-                                    {a.permissions?.manageUsers && <Chip label="Users" size="small" sx={{ bgcolor: 'rgba(79,195,247,0.1)', color: ACCENT, fontSize: '0.6rem', height: 16 }} />}
+                                    {a.permissions?.manageUsers && <Chip label="Users" size="small" sx={{ bgcolor: 'rgba(46,125,50,0.1)', color: ACCENT, fontSize: '0.6rem', height: 16 }} />}
                                     {a.permissions?.manageCourses && <Chip label="Courses" size="small" sx={{ bgcolor: 'rgba(206,147,216,0.1)', color: '#ce93d8', fontSize: '0.6rem', height: 16 }} />}
                                     {a.permissions?.manageExams && <Chip label="Exams" size="small" sx={{ bgcolor: 'rgba(128,203,196,0.1)', color: '#80cbc4', fontSize: '0.6rem', height: 16 }} />}
                                     {a.permissions?.manageAdmins && <Chip label="Admins" size="small" sx={{ bgcolor: 'rgba(255,183,77,0.1)', color: '#ffb74d', fontSize: '0.6rem', height: 16 }} />}
@@ -773,7 +773,7 @@ export default function AdminPanel() {
           <Button onClick={() => setEditUser(null)} sx={{ color: '#555' }}>Cancel</Button>
           <Button variant="contained" onClick={handleEditSave} disabled={editSaving}
             startIcon={editSaving ? <CircularProgress size={14} color="inherit" /> : <Save sx={{ fontSize: 14 }} />}
-            sx={{ bgcolor: ACCENT, color: '#000', fontWeight: 700, '&:hover': { bgcolor: '#29b6f6' } }}>
+            sx={{ bgcolor: ACCENT, color: '#000', fontWeight: 700, '&:hover': { bgcolor: '#1B5E20' } }}>
             {editSaving ? 'Saving…' : 'Save'}
           </Button>
         </DialogActions>
@@ -1041,7 +1041,7 @@ export default function AdminPanel() {
           <Button onClick={() => setAddAdminDialog(false)} sx={{ color: '#555' }}>Cancel</Button>
           <Button variant="contained" onClick={handleAddAdmin} disabled={addingAdmin}
             startIcon={addingAdmin ? <CircularProgress size={14} color="inherit" /> : <Save sx={{ fontSize: 14 }} />}
-            sx={{ bgcolor: ACCENT, color: '#000', fontWeight: 700, '&:hover': { bgcolor: '#29b6f6' } }}>
+            sx={{ bgcolor: ACCENT, color: '#000', fontWeight: 700, '&:hover': { bgcolor: '#1B5E20' } }}>
             {addingAdmin ? 'Creating…' : 'Create Admin'}
           </Button>
         </DialogActions>

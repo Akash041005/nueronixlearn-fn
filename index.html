@@ -56,11 +56,16 @@
     <style>
       *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
       html { scroll-behavior: smooth; font-size: 16px; }
-      body { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
+      body { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; overflow-x: hidden; }
+      #root { min-height: 100vh; }
       ::selection { background: rgba(46, 125, 50, 0.3); }
       ::-webkit-scrollbar { width: 8px; }
       ::-webkit-scrollbar-track { background: transparent; }
       ::-webkit-scrollbar-thumb { background: rgba(46, 125, 50, 0.4); border-radius: 4px; }
+      @media (max-width: 768px) {
+        html, body { overflow-x: hidden; overflow-y: auto; }
+        #root { overflow: hidden; }
+      }
     </style>
     
     <!-- Structured Data -->

@@ -17,7 +17,7 @@ const api = axios.create({
     'Content-Type': 'application/json'
   },
   withCredentials: false,
-  timeout: 60000  // 60s — AI calls (roadmap generation, blog search) can take 15-30s
+  timeout: 120000  // 120s — AI video generation can take time
 });
 
 let isRefreshing = false;
@@ -91,7 +91,16 @@ api.interceptors.response.use(
 
 export const authAPI = {
   login: (email: string, password: string) => api.post('/auth/login', { email, password }),
-  register: (data: { name: string; email: string; password: string; role?: string; phone?: string }) => 
+  register: (data: { 
+    name: string; 
+    email: string; 
+    password: string; 
+    role?: string; 
+    phone?: string;
+    learningPace?: 'slow' | 'moderate' | 'fast';
+    experienceLevel?: 'beginner' | 'intermediate' | 'professional';
+    subjects?: string[];
+  }) => 
     api.post('/auth/register', data),
   getMe: () => api.get('/auth/me'),
   updateProfile: (data: any) => api.put('/auth/profile', data),
@@ -253,6 +262,19 @@ export const adminAPI = {
   
   // Analytics
   getAnalytics: (days?: number) => api.get('/admin/analytics', { params: { days } })
+};
+
+export const aiAPI = {
+  getRecommendation: () => api.get('/ai/recommendation'),
+  getProfile: () => api.get('/ai/profile'),
+  updateProfile: (data: { learningPace?: string; experienceLevel?: string; subjects?: string[]; strongTopics?: string[]; weakTopics?: string[] }) => 
+    api.put('/ai/profile', data),
+  updateTopicProgress: (data: { subject: string; topic: string; timeSpent?: number; quizScore?: number; attempts?: number; completed?: boolean }) =>
+    api.post('/ai/topic-progress', data),
+  getLearningTwin: () => api.get('/ai/learning-twin'),
+  generateSlides: (topic: string, subject: string) => api.post('/ai-media/generate-slides', { topic, subject }),
+  generateDiagram: (topic: string, subject: string) => api.get(`/ai-media/diagram/${encodeURIComponent(topic)}/${encodeURIComponent(subject)}`),
+  generateVideo: (topic: string, subject: string, subtopic?: string) => api.post('/ai-media/generate-video', { topic, subject, subtopic })
 };
 
 export default api;

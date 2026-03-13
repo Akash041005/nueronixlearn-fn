@@ -9,11 +9,11 @@ import {
 } from 'recharts';
 import {
   ArrowForward, TrendingUp, Schedule, LocalFireDepartment,
-  School, BookmarkBorder, CheckCircleOutline
+  School, BookmarkBorder, CheckCircleOutline, AutoAwesome
 } from '@mui/icons-material';
 import { motion, useInView } from 'framer-motion';
 import { useAuth } from '../context/AuthContext';
-import { analyticsAPI, mlAPI } from '../services/api';
+import { analyticsAPI, mlAPI, aiAPI } from '../services/api';
 import PageBackground from '../components/PageBackground';
 
 const DARK_ACCENT  = '#2E7D32';
@@ -105,6 +105,7 @@ export default function Dashboard() {
   const [data,            setData]            = useState<any>(null);
   const [recommendations, setRecommendations] = useState<any[]>([]);
   const [dailyProgress,   setDailyProgress]   = useState<any[]>([]);
+  const [aiRecommendation, setAiRecommendation] = useState<any>(null);
   const [loading,         setLoading]         = useState(true);
 
   useEffect(() => {
@@ -114,10 +115,12 @@ export default function Dashboard() {
       analyticsAPI.getDashboard().catch(() => ({ data: {} })),
       mlAPI.getRecommendations().catch(() => ({ data: {} })),
       analyticsAPI.getDailyProgress().catch(() => ({ data: {} })),
-    ]).then(([dash, recs, daily]) => {
+      aiAPI.getRecommendation().catch(() => ({ data: {} })),
+    ]).then(([dash, recs, daily, aiRec]) => {
       setData(dash.data ?? {});
       setRecommendations(safe(recs.data?.recommendations));
       setDailyProgress(safe(daily.data?.dailyProgress));
+      setAiRecommendation(aiRec.data || null);
     }).catch(() => {
       // final safety net
     }).finally(() => setLoading(false));
@@ -270,6 +273,63 @@ export default function Dashboard() {
 
           {/* ── Right ── */}
           <Grid item xs={12} md={4}>
+
+            {/* AI Learning Twin Recommendation */}
+            {aiRecommendation && (
+              <FadeIn delay={0.1}>
+                <Card sx={{ bgcolor: cardBg, border: `1px solid ${cardBorder}`, borderRadius: 3, boxShadow: cardShadow, mb: 3 }}>
+                  <CardContent sx={{ p: 3 }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1.5 }}>
+                      <AutoAwesome sx={{ color: '#4DFFA3', fontSize: 18 }} />
+                      <Typography sx={{ color: '#4DFFA3', textTransform: 'uppercase', letterSpacing: '0.08em', fontSize: '0.68rem', fontWeight: 700 }}>
+                        AI Learning Twin
+                      </Typography>
+                    </Box>
+                    <Typography variant="h6" sx={{ fontWeight: 700, color: tp, mb: 1.5, letterSpacing: '-0.01em' }}>
+                      Your Personal Recommendation
+                    </Typography>
+                    <Box sx={{ 
+                      p: 2, 
+                      borderRadius: 2, 
+                      bgcolor: isDark ? 'rgba(77,255,163,0.08)' : 'rgba(46,125,50,0.08)',
+                      border: '1px solid rgba(77,255,163,0.15)',
+                      mb: 2
+                    }}>
+                      <Typography variant="body2" sx={{ color: tp, lineHeight: 1.6, fontSize: '0.9rem' }}>
+                        {aiRecommendation.recommendation || 'Start learning to get personalized recommendations!'}
+                      </Typography>
+                    </Box>
+                    <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+                      <Chip 
+                        label={`Pace: ${aiRecommendation.learningPace || 'moderate'}`} 
+                        size="small" 
+                        sx={{ bgcolor: 'rgba(77,255,163,0.15)', color: '#4DFFA3', fontSize: '0.7rem' }} 
+                      />
+                      <Chip 
+                        label={`Level: ${aiRecommendation.experienceLevel || 'beginner'}`} 
+                        size="small" 
+                        sx={{ bgcolor: 'rgba(77,255,163,0.15)', color: '#4DFFA3', fontSize: '0.7rem' }} 
+                      />
+                      <Chip 
+                        label={`Completed: ${aiRecommendation.completedTopicsCount || 0} topics`} 
+                        size="small" 
+                        sx={{ bgcolor: 'rgba(77,255,163,0.15)', color: '#4DFFA3', fontSize: '0.7rem' }} 
+                      />
+                    </Box>
+                    <Button 
+                      component={Link} 
+                      to="/study-plan" 
+                      size="small" 
+                      variant="outlined"
+                      endIcon={<ArrowForward sx={{ fontSize: 12 }} />}
+                      sx={{ mt: 2, color: '#4DFFA3', borderColor: 'rgba(77,255,163,0.3)', fontSize: '0.78rem', width: '100%' }}
+                    >
+                      View Study Plan
+                    </Button>
+                  </CardContent>
+                </Card>
+              </FadeIn>
+            )}
 
             {/* Recommendations */}
             <FadeIn delay={0.22}>
