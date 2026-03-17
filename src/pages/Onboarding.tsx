@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   Box, Container, Typography, Card, CardContent, Grid, TextField,
   Button, FormControl, InputLabel, Select, MenuItem, Chip, OutlinedInput,
@@ -10,6 +10,7 @@ import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { authAPI } from '../services/api';
 import { AutoAwesome, Person, Psychology, EmojiEvents } from '@mui/icons-material';
+import { useAuth } from '../context/AuthContext';
 
 // ─── Styled stepper connector ────────────────────────────────────────────────
 
@@ -79,8 +80,15 @@ const menuProps = {
 
 const Onboarding = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [activeStep, setActiveStep] = useState(0);
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (user?.role === 'teacher') {
+      navigate('/teacher');
+    }
+  }, [user, navigate]);
   const [formData, setFormData] = useState({
     grade: '',
     subjectInterests: [] as string[],

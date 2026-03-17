@@ -123,8 +123,12 @@ export const AuthProvider = ({
     localStorage.setItem("token", res.data.token);
     setUser(res.data.user);
 
-    if (!res.data.user.onboardingCompleted) {
+    if (res.data.user.role === 'teacher') {
+      navigate("/teacher");
+    } else if (!res.data.user.onboardingCompleted) {
       navigate("/onboarding");
+    } else {
+      navigate("/dashboard");
     }
   };
 
@@ -156,7 +160,11 @@ export const AuthProvider = ({
     localStorage.setItem("token", res.data.token);
     setUser(res.data.user);
 
-    navigate("/onboarding");
+    if (role === 'teacher') {
+      navigate("/teacher");
+    } else {
+      navigate("/onboarding");
+    }
   };
 
   /* -------------------------
@@ -171,7 +179,11 @@ export const AuthProvider = ({
     const res = await api.post("/auth/verify-otp-register", data);
     localStorage.setItem("token", res.data.token);
     setUser(res.data.user);
-    navigate("/onboarding");
+    if (data.role === 'teacher') {
+      navigate("/teacher");
+    } else {
+      navigate("/onboarding");
+    }
   };
 
   const sendLoginOTP = async (email: string) => {

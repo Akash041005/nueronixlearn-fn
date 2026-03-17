@@ -233,6 +233,32 @@ const Register = () => {
                 </>
               )}
 
+              {role === 'teacher' && (
+                <FormControl fullWidth>
+                  <InputLabel sx={{ bgcolor: isDark ? '#0a0a0f' : '#fff', px: 1 }}>Subjects You Teach</InputLabel>
+                  <Select
+                    multiple
+                    value={subjects}
+                    onChange={handleSubjectChange}
+                    input={<OutlinedInput label="Subjects You Teach" />}
+                    renderValue={(selected) => (
+                      <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                        {selected.map((value) => (
+                          <Chip key={value} label={value} size="small" sx={{ bgcolor: `${ACCENT}20`, color: ACCENT }} />
+                        ))}
+                      </Box>
+                    )}
+                    sx={{ '& .MuiOutlinedInput-root': { borderRadius: '10px' } }}
+                  >
+                    {SUBJECTS.map((subject) => (
+                      <MenuItem key={subject} value={subject}>
+                        {subject}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+              )}
+
               <Button fullWidth variant="contained" type="submit" size="large" disabled={loading}
                 sx={{ py: 1.5, borderRadius: '10px', fontWeight: 600, boxShadow: `0 4px 20px ${alpha(ACCENT, 0.3)}` }}>
                 {loading ? <CircularProgress size={20} /> : 'Create Account'}
