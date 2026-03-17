@@ -85,8 +85,13 @@ const Onboarding = () => {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    if (user?.role === 'teacher') {
+    if (!user) {
+      navigate('/login');
+      return;
+    }
+    if (user.role === 'teacher') {
       navigate('/teacher');
+      return;
     }
   }, [user, navigate]);
   const [formData, setFormData] = useState({
